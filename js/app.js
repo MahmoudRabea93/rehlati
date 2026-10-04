@@ -389,6 +389,27 @@ const UI = (() => {
       'آيفون: الإعدادات ← تسهيلات الاستخدام ← المحتوى المنطوق ← الأصوات ← العربية.');
     info.style.background = ok ? '#DFF7E2' : '';
     info.style.color = ok ? '#17632E' : '';
+    fillVisits();
+  }
+  function fillVisits(){
+    const el = document.getElementById('visitInfo');
+    const note = document.getElementById('visitNote');
+    if(!el || !window.Visits) return;
+    const cached = Visits.get();
+    if(cached) el.textContent = ar(cached);
+    Visits.ping().then(n => {
+      el.textContent = n ? ar(n) : '٠';
+      if(note){
+        note.textContent = Visits.live()
+          ? 'عدد مرات فتح الرابط المنشور — مرة واحدة لكل زيارة.'
+          : (n
+            ? 'ده رقم الموقع المنشور. الفتح من الجهاز مش بيتعد.'
+            : 'الرقم هيظهر بعد ما ترفع الملفات وتتفتح الصفحة من الرابط المنشور.');
+      }
+    }).catch(() => {
+      el.textContent = cached ? ar(cached) : '—';
+      if(note) note.textContent = 'مش قادر أوصل للعدّاد دلوقتي — جرّب من الموقع المنشور.';
+    });
   }
   function openSheet(){ syncSwitches(); sheet.classList.add('open'); }
   function closeSheet(){ sheet.classList.remove('open'); }

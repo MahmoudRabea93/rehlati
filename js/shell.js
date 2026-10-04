@@ -132,6 +132,7 @@ const Shell = (() => {
           <div class="stat"><b>${ar(p.correct)}</b><span>صح</span></div>
           <div class="stat"><b>${ar(p.wrong)}</b><span>غلط</span></div>
           <div class="stat"><b style="font-size:18px">${fmtTime(p.timeMs)}</b><span>وقت التعلّم</span></div>
+          <div class="stat"><b id="visitCount">${Visits.get() ? ar(Visits.get()) : '…'}</b><span>زيارة للموقع</span></div>
         </div>
 
         <h3 style="margin:18px 0 6px">🗺️ العوالم</h3>
@@ -158,6 +159,13 @@ const Shell = (() => {
           <button class="btn ghost" id="dBack">رجوع</button>
         </div>
       </div>`;
+
+    const visitEl = document.getElementById('visitCount');
+    if(visitEl){
+      Visits.ping().then(n => {
+        visitEl.textContent = n ? ar(n) : (Visits.live() ? '—' : '٠');
+      }).catch(() => { visitEl.textContent = '—'; });
+    }
 
     document.getElementById('dBack').onclick = home;
     document.getElementById('dGuide').onclick = () => { UI.bar({back:'shell', title:'📘 دليل الوالدين'}); Guide.screen(); };
@@ -193,3 +201,4 @@ const Shell = (() => {
 Progress.load();
 UI.bindSettings();
 Shell.home();
+if(window.Visits) Visits.ping();
