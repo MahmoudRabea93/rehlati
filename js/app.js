@@ -396,19 +396,18 @@ const UI = (() => {
     const note = document.getElementById('visitNote');
     if(!el || !window.Visits) return;
     const cached = Visits.get();
-    if(cached) el.textContent = ar(cached);
+    el.textContent = cached ? ar(cached) : '…';
+    if(note) note.textContent = 'بنجيب العدد من الموقع المنشور…';
     Visits.ping().then(n => {
-      el.textContent = n ? ar(n) : '٠';
+      el.textContent = ar(n || 0);
       if(note){
         note.textContent = Visits.live()
-          ? 'عدد مرات فتح الرابط المنشور — مرة واحدة لكل زيارة.'
-          : (n
-            ? 'ده رقم الموقع المنشور. الفتح من الجهاز مش بيتعد.'
-            : 'الرقم هيظهر بعد ما ترفع الملفات وتتفتح الصفحة من الرابط المنشور.');
+          ? 'كل جهاز جديد بيزوّد الرقم مرة واحدة في الجلسة.'
+          : 'الرقم ده من الرابط المنشور. عشان يتعدّ، لازم الزائر يفتح github.io مش الملف من الجهاز.';
       }
     }).catch(() => {
       el.textContent = cached ? ar(cached) : '—';
-      if(note) note.textContent = 'مش قادر أوصل للعدّاد دلوقتي — جرّب من الموقع المنشور.';
+      if(note) note.textContent = 'العداد مش واصل. ارفعي js/visits.js وحدّثي الصفحة على GitHub.';
     });
   }
   function openSheet(){ syncSwitches(); sheet.classList.add('open'); }
