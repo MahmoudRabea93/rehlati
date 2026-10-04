@@ -1,0 +1,626 @@
+/* ============================================================
+   css/quran.css — العوالم، شاشات القرآن، لوحة ولي الأمر
+   ============================================================ */
+
+/* ---------- كروت العوالم ---------- */
+.worlds{display:flex;flex-direction:column;gap:14px;max-width:560px;margin:24px auto 0}
+.world{
+  display:flex;align-items:center;gap:16px;width:100%;
+  background:var(--paper);border-radius:28px;padding:16px 18px;
+  box-shadow:0 8px 0 var(--shadow);text-align:start;transition:transform .12s;
+}
+.world:active{transform:translateY(4px);box-shadow:0 4px 0 var(--shadow)}
+.world .wi{
+  width:72px;height:72px;flex:0 0 auto;border-radius:24px;background:var(--c);
+  display:grid;place-items:center;font-size:36px;box-shadow:inset 0 -5px 0 rgba(0,0,0,.15);
+}
+.world .wmeta{flex:1;min-width:0}
+.world .wn{display:block;font-size:clamp(20px,5.2vw,25px);font-weight:800;line-height:1.25}
+.world .wd{display:block;font-size:clamp(13px,3.4vw,16px);color:var(--ink-soft);font-weight:600}
+.world .wgo{font-size:34px;color:var(--ink-soft);line-height:1}
+.world .wsoon{
+  font-size:13px;font-weight:800;color:#8a6a00;background:#FFE6A8;
+  padding:5px 12px;border-radius:999px;white-space:nowrap;
+}
+.world.soon{filter:saturate(.3);opacity:.8}
+
+/* ---------- قائمة السور ---------- */
+.surahs{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+  gap:12px;max-width:620px;margin:22px auto 0;
+}
+.surah{
+  display:flex;align-items:center;gap:10px;background:var(--paper);
+  border-radius:20px;padding:12px;box-shadow:0 6px 0 var(--shadow);
+  text-align:start;transition:transform .12s;
+}
+.surah:active{transform:translateY(3px);box-shadow:0 3px 0 var(--shadow)}
+.surah .no{
+  width:42px;height:42px;flex:0 0 auto;border-radius:14px;background:#2FC9B4;color:#fff;
+  display:grid;place-items:center;font-weight:800;font-size:17px;
+}
+.surah .meta{flex:1;min-width:0}
+.surah .name{display:block;font-size:19px;font-weight:800;line-height:1.3}
+.surah .ayn{display:block;font-size:13px;color:var(--ink-soft);font-weight:600}
+.surah .earned{font-size:12px;letter-spacing:1px}
+
+/* ---------- أوضاع السورة ---------- */
+.modes{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:12px;max-width:560px;margin:20px auto 0;
+}
+.mode{
+  background:var(--paper);border-radius:24px;padding:18px 12px;text-align:center;
+  box-shadow:0 7px 0 var(--shadow);position:relative;transition:transform .12s;
+}
+.mode:active{transform:translateY(4px);box-shadow:0 3px 0 var(--shadow)}
+.mode .mi{display:block;font-size:40px;line-height:1.1}
+.mode .mn{display:block;font-size:20px;font-weight:800;margin-top:6px}
+.mode .md{display:block;font-size:13px;color:var(--ink-soft);font-weight:600}
+.mode .ms{position:absolute;top:10px;inset-inline-start:12px;font-size:16px}
+
+.reciter-row{
+  display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+  background:var(--paper);border-radius:20px;padding:12px 16px;
+  max-width:560px;margin:18px auto 0;box-shadow:0 5px 0 var(--shadow);font-weight:700;
+}
+.reciter-row select{
+  font-family:inherit;font-size:16px;font-weight:700;padding:8px 12px;border-radius:12px;
+  border:2px solid var(--line);background:var(--paper-2);color:var(--ink);max-width:100%;
+}
+
+/* ---------- عرض الآيات ---------- */
+.ayah-list{max-height:52vh;overflow:auto;padding:4px}
+.ayah{
+  background:var(--paper-2);border-radius:18px;padding:14px 16px;margin-bottom:10px;
+  font-size:clamp(21px,5.4vw,28px);line-height:2.1;text-align:center;
+  border:3px solid transparent;transition:background .2s,border-color .2s;
+}
+.ayah.on{border-color:#2FC9B4;background:rgba(47,201,180,.14)}
+.ayah.big{font-size:clamp(24px,6.4vw,34px);line-height:2.2}
+.anum{
+  display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;
+  background:#2FC9B4;color:#fff;font-size:15px;font-weight:800;vertical-align:middle;margin-inline-start:6px;
+}
+.ayah-choices{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.achoice{
+  background:var(--paper-2);border:3px solid var(--line);border-radius:18px;
+  padding:14px;font-size:clamp(19px,4.8vw,24px);line-height:2;font-family:inherit;color:var(--ink);
+  text-align:center;transition:transform .1s;
+}
+.achoice:active{transform:scale(.98)}
+.achoice.right{background:#DFF7E2;border-color:#2ecc71}
+.achoice.wrong{background:#FFE6E6;border-color:var(--coral);animation:nope .4s}
+
+/* ---------- مشغّل التلاوة ---------- */
+.player{display:flex;justify-content:center;align-items:center;gap:14px;margin-top:16px;flex-wrap:wrap}
+.pbtn{
+  min-width:64px;height:64px;padding:0 20px;border-radius:22px;background:var(--paper);
+  color:var(--ink);font-size:24px;font-weight:800;box-shadow:0 6px 0 var(--shadow);
+  display:grid;place-items:center;transition:transform .1s;
+}
+.pbtn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--shadow)}
+.pbtn.main{background:#2FC9B4;color:#fff;font-size:22px;box-shadow:0 6px 0 #1C8E7F}
+.pbtn.ok{background:var(--grass-dark);color:#fff;font-size:19px;box-shadow:0 6px 0 rgba(0,0,0,.25)}
+
+/* ---------- ترتيب كلمات الآية (الحفظ) ---------- */
+.word-slots{
+  display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+  min-height:62px;padding:12px;border-radius:18px;
+  background:var(--paper-2);border:3px dashed var(--line);margin-bottom:14px;
+}
+.wslot{
+  min-width:56px;min-height:38px;border-radius:12px;border:2px dashed var(--line);
+  padding:2px 10px;font-size:clamp(19px,4.8vw,25px);line-height:1.9;
+}
+.wslot.filled{border-style:solid;border-color:transparent;background:#2FC9B4;color:#fff;animation:zoom .3s}
+.words{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.word{
+  background:var(--paper-2);border:3px solid var(--line);border-radius:16px;
+  padding:8px 16px;font-family:inherit;font-size:clamp(20px,5vw,26px);line-height:1.9;
+  color:var(--ink);font-weight:600;transition:transform .1s;
+}
+.word:active{transform:scale(.95)}
+.word.used{opacity:.25;pointer-events:none}
+.word.wrong{background:#FFE6E6;border-color:var(--coral);animation:nope .4s}
+
+/* ---------- لوحة ولي الأمر ---------- */
+.dash{text-align:start}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}
+.stat{background:var(--paper-2);border-radius:16px;padding:12px;text-align:center}
+.stat b{display:block;font-size:30px;line-height:1.2}
+.stat span{font-size:13px;color:var(--ink-soft);font-weight:700}
+.dtable{width:100%;border-collapse:collapse;font-size:15px}
+.dtable th,.dtable td{text-align:start;padding:8px 6px;border-bottom:2px solid var(--line)}
+.dtable th{color:var(--ink-soft);font-size:13px}
+
+/* ============================================================
+   العوالم الجديدة: خريطة الرحلة، الحروف، الإنجازات
+   ============================================================ */
+.journey{display:flex;flex-direction:column;align-items:stretch;gap:0;max-width:560px;margin:20px auto 0}
+.jnode{
+  align-self:center;background:var(--gold);color:#4A2B00;font-weight:800;
+  padding:8px 22px;border-radius:999px;box-shadow:0 5px 0 var(--gold-dark);font-size:17px;
+}
+.jline{width:8px;height:22px;align-self:center;border-radius:99px;background:rgba(255,255,255,.55);margin:6px 0}
+.world .wbar{display:block;height:8px;border-radius:99px;background:var(--line);margin-top:7px;overflow:hidden}
+.world .wbar i{display:block;height:100%;border-radius:99px;transition:width .4s}
+.world .wstars{font-size:15px;font-weight:800;white-space:nowrap;color:var(--ink-soft)}
+
+/* لوح الحروف */
+.lboard{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));
+  gap:10px;max-width:560px;margin:20px auto 0;
+}
+.lboard.ltr{direction:ltr}
+.lcell{
+  aspect-ratio:1;border-radius:20px;background:var(--paper);color:var(--ink);
+  font-size:clamp(26px,7vw,36px);font-weight:800;box-shadow:0 5px 0 var(--shadow);
+  display:grid;place-items:center;transition:transform .1s;
+}
+.lcell:active{transform:translateY(3px);box-shadow:0 2px 0 var(--shadow)}
+.lcell.seen{background:#2FC9B4;color:#fff;box-shadow:0 5px 0 #1C8E7F}
+.lcard-in{animation:pop .3s ease both;margin-top:16px}
+.bigletter{
+  font-size:clamp(76px,22vw,130px);font-weight:800;line-height:1.1;text-align:center;color:var(--ink);
+}
+.bigletter.ltr{direction:ltr}
+.bigemoji{font-size:clamp(50px,14vw,80px);text-align:center;line-height:1.2}
+.lword{
+  font-size:clamp(20px,5.4vw,28px);font-weight:800;text-align:center;margin:6px 0 12px;color:var(--ink);
+}
+.lword.ltr{direction:ltr}
+
+/* كلمات وحروف داخل الأسئلة */
+.wordline{
+  display:flex;justify-content:center;gap:6px;flex-wrap:wrap;
+  font-size:clamp(30px,8vw,46px);font-weight:800;margin:6px 0 16px;
+}
+.wordline.ltr{direction:ltr}
+.wordline.big{font-size:clamp(34px,9vw,54px)}
+.wletter{padding:2px 6px}
+.wslot.big{
+  min-width:48px;display:inline-grid;place-items:center;border:4px dashed var(--grape);
+  border-radius:14px;color:var(--grape);
+}
+.item.big{font-size:clamp(60px,17vw,96px)}
+.choice.txt{font-size:clamp(22px,5.6vw,30px);padding:0 18px;min-width:auto}
+.choice.ltr{direction:ltr}
+.choices.wide{flex-direction:column;align-items:stretch;max-width:420px;margin:0 auto}
+.choices.wide .choice{width:100%;min-height:66px}
+
+/* الإنجازات */
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;margin-top:12px}
+.badges.small{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.badge{
+  background:var(--paper-2);border-radius:18px;padding:12px 8px;text-align:center;
+  border:3px solid var(--line);opacity:.55;
+}
+.badge.got{opacity:1;border-color:var(--gold);background:rgba(255,196,61,.16)}
+.badge .bi{display:block;font-size:30px;line-height:1.2}
+.badge .bn{display:block;font-size:12.5px;font-weight:700;margin-top:4px;line-height:1.35}
+.badge-toast{
+  position:fixed;inset-inline:16px;top:calc(16px + env(safe-area-inset-top,0px));z-index:90;
+  max-width:420px;margin:0 auto;display:flex;align-items:center;gap:12px;
+  background:var(--gold);color:#4A2B00;border-radius:20px;padding:12px 18px;
+  box-shadow:0 8px 0 var(--gold-dark);font-weight:700;animation:drop .4s ease;
+}
+.badge-toast .bi{font-size:34px}
+.badge-toast.out{animation:fadeup .5s ease forwards}
+@keyframes fadeup{to{opacity:0;transform:translateY(-24px)}}
+
+/* نبضة عدّاد النجوم لما تزيد */
+.pill.bump{animation:starbump .5s ease}
+@keyframes starbump{
+  0%{transform:scale(1)} 35%{transform:scale(1.28);background:var(--gold)} 100%{transform:scale(1)}
+}
+
+/* توصيل الكابيتل بالسمول */
+.pairs{display:flex;justify-content:center;gap:clamp(18px,8vw,70px);direction:ltr;margin-top:6px}
+.pcol{display:flex;flex-direction:column;gap:10px}
+.choice.pair{min-width:clamp(74px,19vw,96px);min-height:clamp(60px,15vw,76px);font-size:clamp(28px,8vw,40px)}
+.choice.sel{outline:6px solid var(--gold);outline-offset:3px;transform:translateY(3px)}
+.choice.matched{opacity:.35;filter:saturate(.4);pointer-events:none;box-shadow:0 2px 0 rgba(0,0,0,.2)}
+
+/* جدول الأبجدية الإنجليزية */
+.grid.letters{grid-template-columns:repeat(6,1fr);max-width:480px}
+.grid.letters .cell{font-size:clamp(17px,4.6vw,24px)}
+
+/* ضع دائرة حول الحرف */
+.findgrid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(58px,1fr));
+  gap:10px;direction:ltr;max-width:460px;margin:4px auto 0;
+}
+.fcell{
+  aspect-ratio:1;border-radius:50%;background:var(--paper-2);color:var(--ink);
+  border:3px solid var(--line);font-family:inherit;font-weight:800;
+  font-size:clamp(24px,6.4vw,34px);display:grid;place-items:center;transition:transform .1s;
+}
+.fcell:active{transform:scale(.92)}
+.fcell.circled{
+  border-color:var(--grass-dark);border-width:6px;color:var(--grass-dark);
+  background:rgba(100,209,107,.18);animation:zoom .35s;
+}
+.fcell.wrong{animation:nope .4s;border-color:var(--coral);background:#FFE6E6}
+
+/* لعبة الأصحاب */
+.memgrid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));
+  gap:12px;direction:ltr;max-width:430px;margin:6px auto 0;
+}
+.mcard{
+  aspect-ratio:1;border-radius:20px;background:var(--grape);color:#fff;
+  font-size:clamp(26px,7vw,38px);font-weight:800;font-family:inherit;
+  box-shadow:0 6px 0 rgba(0,0,0,.25);display:grid;place-items:center;transition:transform .15s;
+}
+.mcard:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.mcard.flip{background:var(--paper);color:var(--ink);animation:zoom .3s}
+.mcard.matched{background:var(--grass);color:#fff;box-shadow:0 6px 0 var(--grass-dark);opacity:.75}
+.ask.ltr{direction:ltr}
+
+/* حروف الكلمة منفصلة: ك + ت + ب */
+.letterline{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 16px}
+.lchip{
+  min-width:clamp(48px,13vw,66px);padding:6px 10px;border-radius:18px;
+  background:var(--paper-2);border:4px solid var(--line);
+  font-size:clamp(30px,8vw,44px);font-weight:800;text-align:center;line-height:1.3;
+}
+.plus{font-size:clamp(22px,6vw,32px);font-weight:800;color:var(--ink-soft)}
+
+/* عمودين بكلمات طويلة */
+.pairs.text{gap:clamp(10px,4vw,26px)}
+.pairs.text .choice.pair{
+  min-width:clamp(120px,34vw,190px);min-height:62px;
+  font-size:clamp(20px,5vw,27px);padding:0 12px;
+}
+
+/* جدول الحروف العربية — يُقرأ من اليمين */
+.grid.letters.ar{direction:rtl;grid-template-columns:repeat(7,1fr);max-width:500px}
+.grid.letters.ar .cell{font-size:clamp(19px,5vw,27px)}
+
+/* ============================================================
+   طبقة الاحتفال: ومضة، رسالة، حلقات
+   ============================================================ */
+.flash{
+  position:fixed;inset:0;pointer-events:none;
+  animation:flashfade .65s ease-out forwards;
+}
+.flash.ok{background:radial-gradient(circle at 50% 55%, rgba(100,209,107,.42), transparent 62%)}
+.flash.no{background:radial-gradient(circle at 50% 55%, rgba(255,107,107,.34), transparent 62%)}
+@keyframes flashfade{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+
+.popmsg{
+  position:fixed;inset-inline:0;top:42%;margin:0 auto;width:max-content;max-width:86%;
+  padding:12px 28px;border-radius:999px;pointer-events:none;
+  background:var(--gold);color:#4A2B00;font-weight:800;
+  font-size:clamp(22px,6vw,32px);box-shadow:0 8px 0 var(--gold-dark);
+  animation:popup 1.2s cubic-bezier(.2,1.4,.4,1) forwards;
+}
+.popmsg.big{
+  font-size:clamp(26px,7.4vw,40px);background:var(--coral);color:#fff;
+  box-shadow:0 8px 0 #C44;animation-duration:1.6s;
+}
+.popmsg.sadmsg{
+  background:var(--paper);color:var(--ink);font-size:clamp(34px,9vw,48px);
+  box-shadow:0 6px 0 var(--shadow);padding:8px 24px;
+}
+@keyframes popup{
+  0%{opacity:0;transform:scale(.3) translateY(10px)}
+  22%{opacity:1;transform:scale(1.12) translateY(0)}
+  36%{transform:scale(1)}
+  72%{opacity:1;transform:scale(1) translateY(-6px)}
+  100%{opacity:0;transform:scale(.92) translateY(-46px)}
+}
+
+.ring{
+  position:fixed;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;
+  border:5px solid var(--gold);pointer-events:none;
+  animation:ringout 1s ease-out forwards;
+}
+@keyframes ringout{
+  0%{opacity:.9;transform:scale(.4)}
+  100%{opacity:0;transform:scale(5.5)}
+}
+
+/* ============================================================
+   صورة الطفل
+   ============================================================ */
+.avatar{
+  display:inline-grid;place-items:center;flex:0 0 auto;overflow:hidden;
+  width:clamp(56px,15vw,74px);height:clamp(56px,15vw,74px);border-radius:50%;
+  background:var(--paper);border:5px solid var(--gold);
+  box-shadow:0 5px 0 var(--gold-dark);font-size:clamp(28px,8vw,38px);line-height:1;
+}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar.big{width:clamp(76px,22vw,104px);height:clamp(76px,22vw,104px);font-size:clamp(40px,11vw,54px)}
+.avatar.fallback{border-color:var(--mint);box-shadow:0 5px 0 #1C8E7F}
+.avatar.cheer{animation:hop .55s ease}
+
+.greet{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:14px}
+.greet h2{margin:0}
+
+.childrow{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
+.childinfo{flex:1;min-width:0}
+.childinfo > b{font-size:20px;display:block;margin-bottom:6px}
+.childbtns{display:flex;flex-wrap:wrap;gap:8px}
+.childbtns .btn{padding:7px 14px;font-size:14px;margin:0}
+
+/* ============================================================
+   توقيع المطوّر
+   ============================================================ */
+.credit{
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+  margin:28px auto 4px;padding:12px 20px;max-width:max-content;
+  border-radius:18px;background:rgba(255,255,255,.18);
+  text-align:center;line-height:1.5;
+}
+.credit span{font-size:12.5px;font-weight:700;color:var(--paper);opacity:.85;letter-spacing:.2px}
+.credit b{
+  font-size:16px;font-weight:800;color:var(--paper);direction:ltr;
+  text-shadow:0 2px 0 rgba(27,53,87,.28);
+}
+.credit .role{font-size:11.5px;direction:ltr;opacity:.7}
+
+/* التذييل الثابت: يفضل تحت خالص على كل الشاشات من غير ما يزاحم المحتوى */
+.app-credit{margin-top:auto;padding:14px 20px 6px;background:transparent;flex:0 0 auto}
+.app-credit span{font-size:11.5px}
+.app-credit b{font-size:14px}
+.app-credit .role{font-size:10.5px}
+
+/* داخل نافذة الإعدادات اللون مختلف لأن الخلفية فاتحة */
+.sheet-credit{
+  background:transparent;margin:14px auto 0;padding:10px 0 0;
+  border-top:2px solid var(--line);max-width:100%;width:100%;border-radius:0;
+}
+.sheet-credit span{color:var(--ink-soft);opacity:1}
+.sheet-credit b{color:var(--ink);text-shadow:none}
+
+
+/* خانات الترتيب: الأرقام من الشمال، والحروف العربية من اليمين */
+.slots.rtl{direction:rtl}
+.slots.rtl .slot{font-family:inherit}
+
+/* ============================================================
+   مشهد رحلة القرآن: سماء هادئة + غيم وطيور ونجوم
+   ============================================================ */
+.sky{
+  position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+  background:linear-gradient(180deg,#123A6B 0%,#2C6BA8 38%,#79B7D9 72%,#CFE8E4 100%);
+}
+.qwrap{position:relative;z-index:1}
+
+.crescent{position:absolute;top:6%;inset-inline-end:10%;font-size:clamp(34px,9vw,54px);
+  filter:drop-shadow(0 0 14px rgba(255,220,140,.75));animation:sway 9s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-10px) rotate(4deg)}}
+
+.twinkle{
+  position:absolute;left:var(--x);top:var(--y);width:6px;height:6px;border-radius:50%;
+  background:#fff;box-shadow:0 0 8px 2px rgba(255,255,255,.85);
+  animation:tw 2.6s ease-in-out infinite;animation-delay:var(--d);
+}
+@keyframes tw{0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:1;transform:scale(1.25)}}
+
+.cloud{
+  position:absolute;width:120px;height:38px;border-radius:40px;
+  background:rgba(255,255,255,.55);filter:blur(1px);
+  box-shadow:34px 8px 0 -6px rgba(255,255,255,.55), -34px 10px 0 -8px rgba(255,255,255,.45);
+}
+.cloud.k1{top:16%;animation:drift 42s linear infinite}
+.cloud.k2{top:30%;transform:scale(.7);opacity:.75;animation:drift 58s linear infinite 6s}
+.cloud.k3{top:46%;transform:scale(1.15);opacity:.5;animation:drift 72s linear infinite 18s}
+@keyframes drift{from{right:-160px}to{right:112%}}
+
+.bird{position:absolute;width:clamp(26px,7vw,40px);animation:fly 26s linear infinite}
+.bird svg{width:100%;height:auto;overflow:visible}
+.bird .w{fill:none;stroke:#1B3557;stroke-width:2.6;stroke-linecap:round;
+  transform-origin:20px 11px;animation:flap .5s ease-in-out infinite alternate}
+.bird.b1{top:22%;animation-duration:24s}
+.bird.b2{top:27%;animation-duration:30s;animation-delay:3s;transform:scale(.72)}
+.bird.b3{top:18%;animation-duration:34s;animation-delay:9s;transform:scale(.58);opacity:.8}
+.bird.b4{top:35%;animation-duration:28s;animation-delay:14s;transform:scale(.85)}
+.bird.b5{top:31%;animation-duration:38s;animation-delay:20s;transform:scale(.5);opacity:.7}
+.bird.b2 .w{animation-duration:.42s}
+.bird.b3 .w{animation-duration:.58s}
+.bird.b4 .w{animation-duration:.46s}
+@keyframes flap{from{transform:scaleY(1)}to{transform:scaleY(.35)}}
+@keyframes fly{
+  0%{right:-60px;margin-top:0}
+  25%{margin-top:-22px}
+  50%{margin-top:10px}
+  75%{margin-top:-14px}
+  100%{right:108%;margin-top:0}
+}
+
+.palm{position:absolute;bottom:0;font-size:clamp(46px,13vw,80px);
+  transform-origin:50% 100%;animation:palmsway 6s ease-in-out infinite}
+.palm.p1{inset-inline-start:2%}
+.palm.p2{inset-inline-end:3%;font-size:clamp(36px,10vw,62px);animation-delay:1.4s;opacity:.85}
+@keyframes palmsway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.dome{position:absolute;bottom:-4px;inset-inline-start:50%;margin-inline-start:-40px;
+  font-size:clamp(54px,15vw,92px);opacity:.9}
+
+/* ---------- محطات الرحلة ---------- */
+.banner.quran{background:#2FC9B4;box-shadow:0 7px 0 #1C8E7F;color:#04332C}
+.qpath{position:relative;max-width:620px;margin:22px auto 0;padding-bottom:10px}
+.qstart,.qend{
+  width:max-content;margin:0 auto;padding:9px 22px;border-radius:999px;
+  background:var(--gold);color:#4A2B00;font-weight:800;font-size:17px;
+  box-shadow:0 5px 0 var(--gold-dark);
+}
+.qend{background:#2FC9B4;color:#04332C;box-shadow:0 5px 0 #1C8E7F}
+.qlink{
+  width:10px;height:26px;margin:7px auto;border-radius:99px;
+  background:repeating-linear-gradient(to bottom,rgba(255,255,255,.75) 0 7px,transparent 7px 13px);
+}
+.qstop{
+  display:flex;align-items:center;gap:12px;width:min(320px,88%);
+  background:var(--paper);border-radius:24px;padding:11px 14px;
+  box-shadow:0 7px 0 var(--shadow);text-align:start;transition:transform .12s;
+}
+.qstop:nth-of-type(odd){margin-inline-start:auto;margin-inline-end:6%}
+.qstop:nth-of-type(even){margin-inline-end:auto;margin-inline-start:6%}
+.qstop:active{transform:translateY(4px);box-shadow:0 3px 0 var(--shadow)}
+.qstop .qnum{
+  width:50px;height:50px;flex:0 0 auto;border-radius:16px;
+  background:#9FB8CC;color:#fff;display:grid;place-items:center;
+  font-size:18px;font-weight:800;box-shadow:inset 0 -4px 0 rgba(0,0,0,.15);
+}
+.qstop.done .qnum{background:#2FC9B4}
+.qstop.full .qnum{background:var(--gold);color:#4A2B00}
+.qstop .qmeta{flex:1;min-width:0}
+.qstop .qname{display:block;font-size:20px;font-weight:800;line-height:1.3}
+.qstop .qayn{display:block;font-size:13px;color:var(--ink-soft);font-weight:700}
+.qstop .qdots{display:flex;gap:3px;flex-direction:column}
+.qstop .qdots i{font-size:12px;font-style:normal;opacity:.22;line-height:1.15}
+.qstop .qdots i.on{opacity:1}
+
+/* ============================================================
+   دليل الوالدين داخل التطبيق
+   ============================================================ */
+.guide{text-align:start}
+.guide .glead{
+  background:var(--paper-2);border-radius:14px;padding:12px 16px;
+  margin:0 0 14px;font-size:15.5px;font-weight:600;
+}
+.gsec{
+  background:var(--paper-2);border:2px solid var(--line);
+  border-radius:16px;margin-bottom:9px;overflow:hidden;
+}
+.gsec summary{
+  cursor:pointer;padding:13px 16px;font-weight:800;font-size:17px;
+  list-style:none;display:flex;align-items:center;gap:10px;
+}
+.gsec summary::-webkit-details-marker{display:none}
+.gsec summary::after{
+  content:'⌄';margin-inline-start:auto;font-size:21px;color:var(--ink-soft);transition:transform .2s;
+}
+.gsec[open] summary::after{transform:rotate(180deg)}
+.gsec .gi{font-size:21px}
+.gbody{padding:0 16px 14px;font-size:15px;line-height:1.85;color:var(--ink)}
+.gbody p{margin:0 0 9px}
+.gbody ul,.gbody ol{margin:0 0 9px;padding-inline-start:20px}
+.gbody li{margin-bottom:6px}
+
+/* ============================================================
+   مشاهد العوالم المتحركة: أرقام وحروف بترقص وتطير وتجري
+   ============================================================ */
+.wscene{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.wwrap{position:relative;z-index:1}
+
+/* حروف وأرقام بترقص في مكانها */
+
+@keyframes dance{
+  0%,100%{transform:translateY(0) rotate(-9deg) scale(1)}
+  50%{transform:translateY(-20px) rotate(9deg) scale(1.12)}
+}
+
+/* علامات بتطير وتلف */
+
+@keyframes crossing{
+  0%{right:-70px;transform:rotate(0) translateY(0)}
+  25%{transform:rotate(90deg) translateY(-26px)}
+  50%{transform:rotate(180deg) translateY(12px)}
+  75%{transform:rotate(270deg) translateY(-18px)}
+  100%{right:106%;transform:rotate(360deg) translateY(0)}
+}
+
+/* ٤ بيجري ورا ٣ */
+
+@keyframes run{0%{right:-120px}100%{right:110%}}
+.chaser i{
+  display:inline-block;font-style:normal;font-weight:800;
+  font-size:clamp(28px,7.5vw,44px);line-height:1;
+  color:rgba(255,255,255,.72);text-shadow:0 3px 0 rgba(27,53,87,.2);
+  animation:hoprun .34s ease-in-out infinite alternate;
+}
+.chaser i.prey{
+  animation-delay:.17s;font-size:clamp(24px,6.4vw,38px);
+  color:rgba(255,224,130,.9);
+}
+@keyframes hoprun{
+  from{transform:translateY(0) rotate(-7deg)}
+  to{transform:translateY(-12px) rotate(7deg)}
+}
+
+/* فاصل التسلسل: نقطة باهتة مش شرطة تتلخبط مع علامة الطرح */
+.op.sep{font-size:.55em;opacity:.45;padding:0 2px}
+
+
+/* الأرقام العربية في ألعاب العدّ والترتيب تُقرأ من اليمين للشمال.
+   العمليات الحسابية (+ − =) بتفضل من الشمال حسب العُرف الرياضي. */
+.expr.rtl{direction:rtl}      /* الافتراضي بقى rtl — الكلاس ده للتوضيح بس */
+/* الكلمات الإنجليزية جوه تعبير تفضل من الشمال */
+.expr.ltr{direction:ltr}
+/* جدول الأرقام ١–٢٠ بخمسة أعمدة من اليمين */
+.grid.ar:not(.letters){direction:rtl;grid-template-columns:repeat(5,1fr)}
+
+
+/* ============================================================
+   رسومات المشاهد (SVG) — حركة هادية ومرسومة بإيدينا
+   ============================================================ */
+.wscene .art{position:absolute;display:block}
+.wscene svg.art{overflow:visible}
+
+/* الشمس */
+.sun{top:4%;inset-inline-end:7%;width:clamp(72px,17vw,120px);height:auto}
+.sun .rays{transform-origin:60px 60px;animation:spin 26s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* السحاب */
+.drift{position:absolute;width:clamp(90px,26vw,150px)}
+.drift .art{position:static;width:100%;height:auto;opacity:.92}
+.drift.c1{top:11%;animation:driftx 48s linear infinite}
+.drift.c2{top:24%;transform:scale(.72);opacity:.85;animation:driftx 66s linear infinite 8s}
+.drift.c3{top:38%;transform:scale(1.15);opacity:.6;animation:driftx 84s linear infinite 22s}
+@keyframes driftx{from{right:-170px}to{right:112%}}
+
+/* بالونات بتطلع لفوق وتتمايل */
+.floaty{position:absolute;bottom:-130px;width:clamp(42px,11vw,62px)}
+.floaty .art{position:static;width:100%;height:auto}
+.floaty.f1{inset-inline-start:12%;animation:rise 26s linear infinite}
+.floaty.f2{inset-inline-start:46%;animation:rise 34s linear infinite 9s}
+.floaty.f3{inset-inline-start:76%;animation:rise 30s linear infinite 18s}
+@keyframes rise{
+  0%{bottom:-130px;transform:translateX(0) rotate(-4deg)}
+  25%{transform:translateX(18px) rotate(4deg)}
+  50%{transform:translateX(-14px) rotate(-4deg)}
+  75%{transform:translateX(12px) rotate(3deg)}
+  100%{bottom:112%;transform:translateX(0) rotate(0)}
+}
+
+/* طيارة ورق بتتمايل في السما */
+.swinger{position:absolute;top:14%;inset-inline-start:14%;width:clamp(44px,11vw,66px);
+  transform-origin:50% 0;animation:swing 7s ease-in-out infinite}
+.swinger .art{position:static;width:100%;height:auto}
+@keyframes swing{0%,100%{transform:rotate(-9deg) translateY(0)}50%{transform:rotate(9deg) translateY(-16px)}}
+
+/* اللي بيمشي على الأرض: القطر والقطة والعربية */
+.rider{position:absolute;bottom:3%}
+.rider .art{position:static;height:auto}
+.rider.train{width:clamp(170px,46vw,290px);animation:ride 34s linear infinite}
+.rider.cat{width:clamp(80px,21vw,130px);animation:ride 40s linear infinite 4s}
+.rider.car{width:clamp(110px,28vw,170px);animation:ride 26s linear infinite 2s}
+@keyframes ride{from{right:-320px}to{right:108%}}
+
+/* عجلات بتلف */
+.wheel{transform-box:fill-box;transform-origin:center;animation:spin 1.1s linear infinite}
+.rider.car .wheel{animation-duration:.8s}
+
+/* دخان القطر */
+.puff{transform-box:fill-box;transform-origin:center;opacity:0}
+.puff.p1{animation:puff 2.4s ease-out infinite}
+.puff.p2{animation:puff 2.4s ease-out infinite .8s}
+.puff.p3{animation:puff 2.4s ease-out infinite 1.6s}
+@keyframes puff{
+  0%{opacity:.85;transform:translate(0,0) scale(.5)}
+  100%{opacity:0;transform:translate(-26px,-46px) scale(1.7)}
+}
+
+/* ديل القطة ورجليها */
+.tail{transform-box:fill-box;transform-origin:85% 95%;animation:wag 1.3s ease-in-out infinite alternate}
+@keyframes wag{from{transform:rotate(-12deg)}to{transform:rotate(14deg)}}
+.legs{transform-box:fill-box;transform-origin:center;animation:step .42s ease-in-out infinite alternate}
+@keyframes step{from{transform:translateX(-3px)}to{transform:translateX(3px)}}
+
+/* التلال */
+.hills{bottom:0;inset-inline:0;width:100%;height:clamp(90px,22vh,170px)}

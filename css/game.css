@@ -1,0 +1,186 @@
+/* ============================================================
+   css/game.css  (شاشة اللعب والأسئلة)
+   ============================================================ */
+.dots{display:flex;gap:6px;justify-content:center;margin:4px 0 14px;flex-wrap:wrap}
+.dot{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:inset 0 -2px 0 rgba(0,0,0,.12)}
+.dot.done{background:var(--gold)}
+.dot.miss{background:var(--coral)}
+.dot.now{background:var(--paper);transform:scale(1.35)}
+
+.qcard{
+  background:var(--paper);border-radius:34px;
+  padding:clamp(16px,4vw,26px) clamp(14px,4vw,24px);
+  box-shadow:0 10px 0 var(--shadow);
+  animation:pop .3s ease both;
+}
+@keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.qcard.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+
+.ask{
+  text-align:center;font-size:clamp(22px,6vw,30px);font-weight:800;
+  margin:0 0 14px;line-height:1.35;
+}
+.stage-items{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(4px,1.6vw,10px);
+  margin:0 auto 16px;max-width:520px;
+}
+.item{font-size:clamp(34px,9vw,52px);line-height:1.05;animation:drop .35s ease both}
+.item:nth-child(2){animation-delay:.04s}.item:nth-child(3){animation-delay:.08s}
+.item:nth-child(4){animation-delay:.12s}.item:nth-child(5){animation-delay:.16s}
+.item:nth-child(6){animation-delay:.2s}.item:nth-child(7){animation-delay:.24s}
+.item:nth-child(8){animation-delay:.28s}.item:nth-child(9){animation-delay:.32s}
+.item:nth-child(10){animation-delay:.36s}
+@keyframes drop{from{opacity:0;transform:translateY(-18px) scale(.6)}to{opacity:1;transform:none}}
+.item.gone{position:relative;opacity:.3;filter:grayscale(1)}
+.item.gone::after{content:"✖";position:absolute;inset:0;display:grid;place-items:center;color:var(--coral);font-size:.8em;opacity:.95}
+
+/* التعبيرات الحسابية تُقرأ من اليمين للشمال زي باقي التطبيق.
+   ملاحظة: المتصفح بيعكس علامتي < و > تلقائيًا في الاتجاه ده،
+   فبق التمساح بيفضل مفتوح ناحية الرقم الأكبر صح. */
+.expr{
+  direction:rtl;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
+  gap:clamp(8px,2.6vw,18px);margin:4px auto 18px;
+}
+.num-tile{
+  min-width:clamp(62px,16vw,92px);padding:6px 10px;border-radius:22px;
+  background:var(--paper-2);border:4px solid var(--line);
+  font-size:clamp(38px,11vw,62px);font-weight:800;text-align:center;line-height:1.25;
+}
+.num-tile.blank{border-style:dashed;color:var(--grape);background:transparent}
+.op{font-size:clamp(30px,8vw,46px);font-weight:800;color:var(--ink-soft)}
+.side{display:flex;flex-direction:column;align-items:center;gap:4px}
+.side .pics{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;max-width:150px}
+.side .pics span{font-size:clamp(22px,6vw,34px)}
+
+/* زرار إعادة نطق السؤال */
+.ask-row{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 14px}
+.ask-row .ask{margin:0}
+.speak-btn{
+  width:52px;height:52px;flex:0 0 auto;border-radius:50%;
+  background:var(--paper-2);border:3px solid var(--line);
+  font-size:24px;display:grid;place-items:center;transition:transform .1s;
+}
+.speak-btn:active{transform:scale(.9)}
+.speak-btn.on{animation:ring .6s}
+@keyframes ring{0%,100%{transform:rotate(0)}30%{transform:rotate(-12deg)}60%{transform:rotate(10deg)}}
+.note{
+  background:#FFF3D6;color:#7A4B00;border-radius:18px;padding:10px 14px;
+  font-size:15px;font-weight:700;line-height:1.5;margin-top:12px;
+}
+
+/* الاختيارات */
+.choices{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(10px,3vw,18px)}
+.choice{
+  min-width:clamp(86px,24vw,120px);min-height:clamp(86px,24vw,112px);
+  border-radius:26px;background:var(--c,var(--mint));color:#fff;
+  font-size:clamp(38px,11vw,54px);font-weight:800;
+  box-shadow:0 7px 0 rgba(0,0,0,.22);
+  display:grid;place-items:center;
+  transition:transform .1s, box-shadow .1s;
+  text-shadow:0 2px 0 rgba(0,0,0,.18);
+}
+.choice:active{transform:translateY(5px);box-shadow:0 2px 0 rgba(0,0,0,.22)}
+.choice.right{animation:zoom .45s ease}
+.choice.wrong{animation:nope .4s ease;background:var(--coral)}
+.choice.hintme{animation:glow 1s infinite}
+@keyframes zoom{0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}
+@keyframes nope{0%,100%{transform:translateX(0)}25%{transform:translateX(-9px)}75%{transform:translateX(9px)}}
+@keyframes glow{0%,100%{box-shadow:0 7px 0 rgba(0,0,0,.22)}50%{box-shadow:0 7px 0 rgba(0,0,0,.22),0 0 0 10px rgba(255,196,61,.6)}}
+
+/* جدول الأرقام ١–٢٠ */
+.grid{
+  direction:ltr;display:grid;grid-template-columns:repeat(5,1fr);
+  gap:clamp(5px,1.6vw,10px);max-width:440px;margin:0 auto 16px;
+}
+.grid .cell{
+  aspect-ratio:1;border-radius:16px;background:var(--paper-2);
+  display:grid;place-items:center;border:3px solid transparent;
+  font-size:clamp(19px,5.4vw,28px);font-weight:800;color:var(--ink-soft);
+}
+.grid .slot{
+  width:auto;height:auto;border-radius:16px;font-size:clamp(19px,5.4vw,28px);
+  border:3px dashed var(--line);background:transparent;color:var(--ink);
+}
+.grid .slot.now{border-color:var(--grape);border-style:solid;animation:breathe 1.3s ease-in-out infinite}
+.grid .slot.filled{background:var(--mint);color:#fff;border-color:transparent}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+
+/* الترتيب */
+.slots{
+  direction:ltr;display:flex;justify-content:center;gap:clamp(8px,2.4vw,14px);
+  margin:0 auto 18px;flex-wrap:wrap;
+}
+.slot{
+  width:clamp(62px,16vw,86px);height:clamp(62px,16vw,86px);border-radius:22px;
+  border:4px dashed var(--line);display:grid;place-items:center;
+  font-size:clamp(32px,9vw,46px);font-weight:800;color:var(--ink);
+}
+.slot.filled{border-style:solid;background:var(--mint);color:#fff;border-color:transparent;animation:zoom .3s}
+.order-hint{text-align:center;color:var(--ink-soft);font-weight:700;margin:-6px 0 14px;font-size:clamp(14px,3.6vw,17px)}
+
+/* --- النتيجة --- */
+.result{text-align:center}
+.score{
+  font-size:clamp(52px,16vw,86px);font-weight:800;direction:ltr;
+  color:var(--grape);line-height:1.1;margin:4px 0;
+}
+.starline{font-size:clamp(20px,5.4vw,28px);letter-spacing:3px;line-height:1.5;word-break:break-word}
+.pct{font-weight:700;color:var(--ink-soft);font-size:clamp(16px,4.2vw,20px);margin:4px 0 16px}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px 26px;border-radius:22px;font-weight:800;
+  font-size:clamp(17px,4.4vw,21px);color:#fff;background:var(--grape);
+  box-shadow:0 6px 0 rgba(0,0,0,.25);margin:6px 5px;transition:transform .1s;
+}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.btn.ghost{background:var(--paper);color:var(--ink);box-shadow:0 6px 0 var(--shadow)}
+.btn.go{background:var(--grass-dark)}
+.btn.train{background:var(--coral)}
+
+/* --- نافذة الإعدادات --- */
+.sheet{
+  position:fixed;inset:0;z-index:60;display:none;
+  align-items:center;justify-content:center;padding:18px;
+  background:rgba(12,28,48,.55);
+}
+.sheet.open{display:flex}
+.sheet .panel{
+  background:var(--paper);border-radius:30px;padding:22px;
+  width:min(420px,100%);box-shadow:0 14px 0 var(--shadow);
+  max-height:88vh;overflow:auto;
+}
+.sheet h3{margin:0 0 14px;font-size:24px;text-align:center}
+.row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 4px;border-bottom:2px solid var(--line);font-weight:700;font-size:18px;
+}
+.row:last-of-type{border-bottom:0}
+.switch{
+  width:64px;height:36px;border-radius:999px;background:var(--line);
+  position:relative;flex:0 0 auto;transition:background .18s;
+}
+.switch::after{
+  content:"";position:absolute;top:4px;inset-inline-start:4px;
+  width:28px;height:28px;border-radius:50%;background:var(--paper);
+  box-shadow:0 2px 4px rgba(0,0,0,.3);transition:transform .18s;
+}
+.switch[aria-checked="true"]{background:var(--grass-dark)}
+.switch[aria-checked="true"]::after{transform:translateX(-28px)}
+
+/* --- نجوم تتطاير --- */
+#fx{position:fixed;inset:0;pointer-events:none;z-index:70;overflow:hidden}
+.fxs{position:absolute;font-size:30px;animation:fly .9s ease-out forwards}
+@keyframes fly{
+  0%{opacity:1;transform:translate(0,0) scale(.4) rotate(0)}
+  100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.4) rotate(var(--rot))}
+}
+.conf{position:absolute;top:-24px;width:12px;height:18px;border-radius:3px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:.9}}
+
+.center{text-align:center}
+.hidden{display:none !important}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}
