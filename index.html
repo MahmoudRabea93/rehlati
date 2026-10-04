@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="author" content="Mahmoud Rabea Hassan — Software Engineer">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/game.css">
+<link rel="stylesheet" href="css/quran.css">
+<title>رحلتي التعليمية — عالم الحساب</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="app">
+  <header class="topbar" id="topbar"></header>
+  <main id="screen" aria-live="polite"></main>
+  <footer class="credit app-credit">
+    <span>تصميم وتطوير</span>
+    <b>Mahmoud Rabea Hassan</b>
+    <span class="role">Software Engineer</span>
+  </footer>
+</div>
+<div id="fx" aria-hidden="true"></div>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="الإعدادات">
+  <div class="panel">
+    <h3>⚙️ الإعدادات</h3>
+    <div class="row"><span>🔊 نطق الأسئلة</span><button class="switch" id="swSpeech" role="switch"></button></div>
+    <div class="row"><span>🎵 أصوات اللعبة</span><button class="switch" id="swSfx" role="switch"></button></div>
+    <div class="row"><span>🔓 فتح كل المراحل (للتطوير)</span><button class="switch" id="swDev" role="switch"></button></div>
+    <div class="row"><span>🎤 صوت القراءة</span><button class="btn ghost" id="btnTest" style="padding:8px 16px;margin:0">جرّب</button></div>
+    <div id="voiceInfo" class="note"></div>
+    <div class="row"><span>📘 دليل الوالدين</span><button class="btn ghost" id="btnGuide" style="padding:8px 16px;margin:0">افتح</button></div>
+    <div class="row"><span>👨‍👩‍👦 لوحة ولي الأمر</span><button class="btn ghost" id="btnParent" style="padding:8px 16px;margin:0">افتح</button></div>
+    <div class="center" style="margin-top:16px">
+      <button class="btn ghost" id="btnReset">🗑️ إعادة ضبط التقدم</button>
+      <button class="btn" id="btnCloseSheet">تمام</button>
+    </div>
+    <div class="credit sheet-credit">
+      <span>رحلتي التعليمية — تصميم وتطوير</span>
+      <b>Mahmoud Rabea Hassan</b>
+      <span class="role">Software Engineer</span>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="audio/manifest.js"></script>
+<script src="data/arabic.js"></script>
+<script src="data/english.js"></script>
+<script src="js/data.js"></script>
+<script src="js/worlds.js"></script>
+<script src="js/scenes.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/games/counting.js"></script>
+<script src="js/games/chooseNumber.js"></script>
+<script src="js/games/nextNumber.js"></script>
+<script src="js/games/previousNumber.js"></script>
+<script src="js/games/sequence.js"></script>
+<script src="js/games/ascending.js"></script>
+<script src="js/games/descending.js"></script>
+<script src="js/games/comparison.js"></script>
+<script src="js/games/addition.js"></script>
+<script src="js/games/subtraction.js"></script>
+<script src="js/games/completeTable.js"></script>
+<script src="js/gameEngine.js"></script>
+<script src="js/app.js"></script>
+<script src="js/arabic.js"></script>
+<script src="js/english.js"></script>
+<script src="js/quran.js"></script>
+<script src="js/avatar.js"></script>
+<script src="js/guide.js"></script>
+<script src="js/rewards.js"></script>
+<script src="js/adaptive.js"></script>
+<script src="js/shell.js"></script>
+</body>
+</html>

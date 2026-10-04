@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="author" content="Mahmoud Rabea Hassan — Software Engineer">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>تحقّق من مصدر النص — رحلتي التعليمية</title>
+<style>
+:root{--bg:#0f1b2d;--card:#1c2b45;--ink:#eaf2ff;--soft:#9fb6d4;--ok:#2ecc71;--no:#ff5f5f;--line:rgba(255,255,255,.14)}
+@media (prefers-color-scheme: light){:root{--bg:#eef3fa;--card:#fff;--ink:#15233a;--soft:#5b7390;--line:rgba(0,0,0,.12)}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Tahoma,system-ui,sans-serif;padding:16px;line-height:1.7}
+.wrap{max-width:900px;margin:0 auto}
+h1{font-size:21px;margin:0 0 4px}
+p.sub{color:var(--soft);font-size:14px;margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+label{font-size:14px;color:var(--soft);display:block;margin-bottom:4px}
+select,button{font-family:inherit;font-size:15px}
+select{padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+button{padding:10px 18px;border-radius:10px;border:0;background:#4c6ef5;color:#fff;font-weight:700;cursor:pointer}
+button.ghost{background:transparent;color:var(--soft);border:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.col h3{font-size:14px;color:var(--soft);margin:0 0 8px;font-weight:600}
+.ay{padding:10px 12px;border-radius:10px;background:rgba(128,160,200,.1);margin-bottom:7px;font-size:21px;line-height:2.1}
+.ay.diff{background:rgba(255,95,95,.18);outline:1px solid var(--no)}
+.n{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#2FC9B4;color:#fff;font-size:12px;font-weight:700;vertical-align:middle;margin-inline-start:6px}
+.verdict{font-size:16px;font-weight:700;margin-bottom:10px}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.pill.ok{background:rgba(46,204,113,.2);color:var(--ok)}
+.pill.no{background:rgba(255,95,95,.2);color:var(--no)}
+#log{font-size:13px;color:var(--soft);white-space:pre-wrap;direction:ltr;text-align:left}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📖 تحقّق من مصدر النص</h1>
+  <p class="sub">قارن نص السورة من المصدرين حرفًا بحرف، واتأكد إن روابط التلاوة شغالة — قبل ما تدّي التطبيق لطفل.</p>
+
+  <div class="card">
+    <label>السورة (جزء عمّ)</label>
+    <select id="sel"></select>
+    <button id="go" style="margin-inline-start:8px">قارن المصدرين</button>
+    <button class="ghost" id="aud">اختبر التلاوة</button>
+    <div id="verdict" class="verdict" style="margin-top:12px"></div>
+  </div>
+
+  <div class="grid">
+    <div class="card col"><h3 id="h1">Quran.com API v4</h3><div id="c1"></div></div>
+    <div class="card col"><h3 id="h2">AlQuran Cloud</h3><div id="c2"></div></div>
+  </div>
+
+  <div class="card"><div id="log">—</div></div>
+
+<footer style="margin:28px auto 8px;padding:12px;text-align:center;line-height:1.6;opacity:.75">
+  <div style="font-size:12.5px;font-weight:700">تصميم وتطوير</div>
+  <div style="font-size:15px;font-weight:800;direction:ltr">Mahmoud Rabea Hassan</div>
+  <div style="font-size:11.5px;direction:ltr;opacity:.8">Software Engineer</div>
+</footer>
+</div>
+
+<script src="js/config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const log = t => $('log').textContent = t;
+const esc = t => String(t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+const sel = $('sel');
+for(let n = QURAN_CONFIG.range.from; n <= QURAN_CONFIG.range.to; n++){
+  const o = document.createElement('option');
+  o.value = n; o.textContent = 'سورة رقم ' + n;
+  sel.appendChild(o);
+}
+sel.value = 114;
+
+async function pull(key, n){
+  const s = QURAN_CONFIG.sources[key];
+  const r = await fetch(s.versesUrl(n));
+  if(!r.ok) throw new Error(key + ' → HTTP ' + r.status);
+  return s.parseVerses(await r.json());
+}
+
+$('go').onclick = async () => {
+  const n = +sel.value;
+  $('verdict').textContent = '⏳ بنجيب النص من المصدرين…';
+  $('c1').innerHTML = $('c2').innerHTML = '';
+  let a = [], b = [], err = [];
+  try{ a = await pull('quran.com', n); }catch(e){ err.push(e.message); }
+  try{ b = await pull('alquran.cloud', n); }catch(e){ err.push(e.message); }
+
+  const max = Math.max(a.length, b.length);
+  let diffs = 0;
+  const draw = (arr, other, el) => {
+    el.innerHTML = arr.map((v,i) => {
+      const same = other[i] && other[i].text === v.text;
+      if(!same) diffs++;
+      return `<div class="ay ${same?'':'diff'}">${esc(v.text)}<span class="n">${v.number}</span></div>`;
+    }).join('') || '<div class="ay">—</div>';
+  };
+  draw(a, b, $('c1')); draw(b, a, $('c2'));
+  diffs = Math.round(diffs / 2);
+
+  $('verdict').innerHTML = err.length
+    ? `<span class="pill no">فشل</span> ${esc(err.join(' / '))} — لو الصفحة مفتوحة من file:// جرّب من سيرفر محلي أو اتأكد من النت.`
+    : (a.length === b.length && diffs === 0)
+      ? `<span class="pill ok">مطابق</span> المصدران متطابقان حرفًا بحرف — ${a.length} آية.`
+      : `<span class="pill no">فيه اختلاف</span> عدد الآيات: ${a.length} مقابل ${b.length} — الآيات المختلفة متظللة بالأحمر. الاختلاف غالبًا في رسم البسملة أو علامات الوقف، راجعها قبل الاعتماد.`;
+  log(`السورة ${n}\nquran.com: ${a.length} آية\nalquran.cloud: ${b.length} آية`);
+};
+
+$('aud').onclick = () => {
+  const n = +sel.value;
+  const out = [];
+  Object.keys(QURAN_CONFIG.reciters).forEach(k => {
+    const f = QURAN_CONFIG.reciters[k].folder;
+    const url = QURAN_CONFIG.ayahAudioUrl(f, n, 1);
+    const au = new Audio(url);
+    au.oncanplay = () => { log(out.concat(`✅ ${QURAN_CONFIG.reciters[k].label}: الرابط شغال`).join('\n')); };
+    au.onerror  = () => { log(out.concat(`❌ ${QURAN_CONFIG.reciters[k].label}: الرابط مش شغال → ${url}`).join('\n')); };
+    out.push(`▶️ ${QURAN_CONFIG.reciters[k].label}\n   ${url}`);
+    au.load();
+  });
+  log(out.join('\n'));
+};
+
+$('go').click();
+</script>
+</body>
+</html>

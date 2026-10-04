@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="author" content="Mahmoud Rabea Hassan — Software Engineer">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>دليل الوالدين — رحلتي التعليمية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F3F7FC;--card:#fff;--ink:#17283F;--soft:#5B7390;--line:rgba(0,0,0,.1);--accent:#2FC9B4;--gold:#FFC43D}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#101D30;--card:#1B2A42;--ink:#EAF2FF;--soft:#9FB6D4;--line:rgba(255,255,255,.14)}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);line-height:1.85;padding:20px;
+  font-family:"Baloo Bhaijaan 2","Segoe UI",Tahoma,sans-serif}
+.wrap{max-width:780px;margin:0 auto}
+header{text-align:center;margin-bottom:22px}
+h1{font-size:clamp(26px,6vw,36px);margin:0 0 4px}
+.sub{color:var(--soft);font-size:15px;margin:0}
+.toolbar{display:flex;gap:10px;justify-content:center;margin:18px 0 26px;flex-wrap:wrap}
+.toolbar button{
+  font-family:inherit;font-size:15px;font-weight:700;padding:10px 20px;border:0;border-radius:12px;
+  background:var(--accent);color:#04332C;cursor:pointer}
+.toolbar button.alt{background:transparent;color:var(--soft);border:1px solid var(--line)}
+.guide .glead{background:var(--card);border-radius:14px;padding:14px 18px;border:1px solid var(--line);margin:0 0 16px}
+.gsec{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.gsec summary{
+  cursor:pointer;padding:14px 18px;font-weight:800;font-size:17px;list-style:none;
+  display:flex;align-items:center;gap:10px}
+.gsec summary::-webkit-details-marker{display:none}
+.gsec summary::after{content:'⌄';margin-inline-start:auto;font-size:22px;color:var(--soft);transition:transform .2s}
+.gsec[open] summary::after{transform:rotate(180deg)}
+.gsec .gi{font-size:21px}
+.gbody{padding:0 18px 16px;font-size:15.5px;color:var(--ink)}
+.gbody p{margin:0 0 10px}
+.gbody ul,.gbody ol{margin:0 0 10px;padding-inline-start:22px}
+.gbody li{margin-bottom:7px}
+.gbody b{color:var(--ink)}
+footer{margin-top:28px;text-align:center;color:var(--soft);font-size:13px;line-height:1.7}
+footer b{display:block;font-size:15px;color:var(--ink);direction:ltr}
+@media print{
+  body{background:#fff;color:#000;padding:0}
+  .toolbar{display:none}
+  .gsec{break-inside:avoid;border-color:#ccc}
+  .gsec .gbody{display:block !important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>📘 دليل الوالدين</h1>
+    <p class="sub">رحلتي التعليمية — تطبيق تعليمي للأطفال من ٤ لـ ٦ سنين</p>
+  </header>
+
+  <div class="toolbar">
+    <button onclick="openAll()">افتح كل الأقسام</button>
+    <button class="alt" onclick="window.print()">🖨️ اطبع</button>
+    <button class="alt" onclick="location.href='index.html'">↩ رجوع للتطبيق</button>
+  </div>
+
+  <div id="g"></div>
+
+  <footer>
+    <span>تصميم وتطوير</span>
+    <b>Mahmoud Rabea Hassan</b>
+    <span>Software Engineer</span>
+  </footer>
+</div>
+
+<script src="js/guide.js"></script>
+<script>
+  document.getElementById('g').innerHTML = Guide.html();
+  function openAll(){ document.querySelectorAll('details').forEach(d => d.open = true); }
+</script>
+</body>
+</html>

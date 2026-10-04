@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="author" content="Mahmoud Rabea Hassan — Software Engineer">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>فحص الصوت — رحلتي التعليمية</title>
+<style>
+:root{
+  --bg:#0f1b2d; --card:#1c2b45; --ink:#eaf2ff; --soft:#9fb6d4;
+  --ok:#2ecc71; --no:#ff5f5f; --warn:#ffc43d; --line:rgba(255,255,255,.14);
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){ --bg:#f3f7fc; --card:#fff; --ink:#15233a; --soft:#5b7390; }
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Segoe UI",Tahoma,system-ui,sans-serif;
+  padding:18px;line-height:1.6;
+}
+.wrap{max-width:760px;margin:0 auto}
+h1{font-size:22px;margin:0 0 4px}
+p.sub{color:var(--soft);margin:0 0 18px;font-size:14px}
+.card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:14px;border:1px solid var(--line)}
+.verdict{font-size:18px;font-weight:700;display:flex;gap:10px;align-items:flex-start}
+.big{
+  display:block;width:100%;padding:16px;border:0;border-radius:14px;cursor:pointer;
+  background:#4c6ef5;color:#fff;font-size:18px;font-weight:700;font-family:inherit;margin-bottom:10px;
+}
+.big.alt{background:#2ea36b}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:start;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{color:var(--soft);font-weight:600;font-size:13px}
+tr.ar td{background:rgba(46,204,113,.12)}
+button.try{
+  padding:6px 14px;border-radius:8px;border:1px solid var(--line);
+  background:transparent;color:var(--ink);cursor:pointer;font-family:inherit;font-size:13px;white-space:nowrap;
+}
+code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:5px;font-size:13px;direction:ltr;display:inline-block}
+#log{font-size:13px;direction:ltr;text-align:left;white-space:pre-wrap;color:var(--soft);max-height:220px;overflow:auto}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.pill.ok{background:rgba(46,204,113,.2);color:var(--ok)}
+.pill.no{background:rgba(255,95,95,.2);color:var(--no)}
+.pill.warn{background:rgba(255,196,61,.2);color:var(--warn)}
+.copy{margin-top:10px;background:#555f73}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔎 فحص الصوت</h1>
+  <p class="sub">الصفحة دي بتقولك بالظبط إيه اللي مانع النطق في التطبيق.</p>
+
+  <div class="card">
+    <div class="verdict" id="verdict">⏳ بنحمّل قائمة الأصوات…</div>
+  </div>
+
+  <button class="big" id="btnAr">🔊 اضغط هنا لاختبار النطق العربي</button>
+  <button class="big alt" id="btnBeep">🎵 اختبار نغمة اللعبة (من غير أصوات النظام)</button>
+
+  <div class="card">
+    <strong>الأصوات الموجودة على الجهاز</strong>
+    <div id="count" class="sub"></div>
+    <table id="tbl"><thead><tr><th>الاسم</th><th>اللغة</th><th>المصدر</th><th></th></tr></thead><tbody></tbody></table>
+  </div>
+
+  <div class="card">
+    <strong>سجل الأحداث</strong>
+    <div id="log">—</div>
+    <button class="big copy" id="btnCopy">📋 انسخ التقرير وابعتهولي</button>
+  </div>
+
+<footer style="margin:28px auto 8px;padding:12px;text-align:center;line-height:1.6;opacity:.75">
+  <div style="font-size:12.5px;font-weight:700">تصميم وتطوير</div>
+  <div style="font-size:15px;font-weight:800;direction:ltr">Mahmoud Rabea Hassan</div>
+  <div style="font-size:11.5px;direction:ltr;opacity:.8">Software Engineer</div>
+</footer>
+</div>
+
+<script>
+const synth = window.speechSynthesis;
+const $ = id => document.getElementById(id);
+const logs = [];
+function log(msg){
+  logs.push(msg);
+  $('log').textContent = logs.slice(-40).join('\n');
+  $('log').scrollTop = 1e6;
+}
+
+let voices = [], arVoices = [];
+
+function refresh(){
+  if(!synth){
+    $('verdict').innerHTML = '<span class="pill no">مشكلة</span> المتصفح ده مش بيدعم النطق خالص. جرّب Chrome أو Edge.';
+    return;
+  }
+  voices = synth.getVoices() || [];
+  arVoices = voices.filter(v => /^ar/i.test(v.lang) || /arabic|عرب/i.test(v.name||''));
+  $('count').textContent = `العدد الكلي: ${voices.length} — منهم ${arVoices.length} صوت عربي`;
+
+  const tb = $('tbl').querySelector('tbody');
+  tb.innerHTML = voices.map((v,i)=>{
+    const isAr = /^ar/i.test(v.lang) || /arabic|عرب/i.test(v.name||'');
+    return `<tr class="${isAr?'ar':''}">
+      <td>${isAr?'🟢 ':''}${v.name}</td>
+      <td><code>${v.lang}</code></td>
+      <td>${v.localService ? 'الجهاز' : 'الإنترنت'}</td>
+      <td><button class="try" data-i="${i}">جرّب</button></td></tr>`;
+  }).join('') || '<tr><td colspan="4">لسه مفيش أصوات — استنى ثانيتين أو اعمل Refresh.</td></tr>';
+
+  tb.querySelectorAll('button.try').forEach(b=>{
+    b.onclick = ()=> say('واحد، اتنين، تلاتة، أربعة، خمسة', voices[+b.dataset.i]);
+  });
+
+  if(!voices.length){
+    $('verdict').innerHTML = '<span class="pill warn">انتظار</span> لسه مفيش أصوات محمّلة. لو فضلت كده بعد ١٠ ثواني، يبقى المتصفح مش لاقي أي صوت على النظام.';
+  }else if(arVoices.length){
+    $('verdict').innerHTML = `<span class="pill ok">تمام</span> فيه ${arVoices.length} صوت عربي: <b>${arVoices.map(v=>v.name).join('، ')}</b>. اضغط زرار الاختبار فوق — لو مسمعتش حاجة يبقى المشكلة في صوت الويندوز نفسه (مكتوم أو مخرج صوت غلط).`;
+  }else{
+    $('verdict').innerHTML = '<span class="pill no">دي المشكلة</span> مفيش أي صوت عربي على الجهاز، فالمتصفح مش قادر ينطق عربي مهما عملنا في الكود. الحل تحت.';
+  }
+}
+
+function say(text, v){
+  if(!synth) return;
+  try{ synth.cancel(); synth.resume(); }catch(e){}
+  const u = new SpeechSynthesisUtterance(text);
+  if(v){ u.voice = v; u.lang = v.lang; } else { u.lang = 'ar-EG'; }
+  u.rate = .85; u.volume = 1;
+  u.onstart = ()=> log(`✅ بدأ النطق — الصوت: ${v ? v.name+' / '+v.lang : 'الافتراضي (ar-EG)'}`);
+  u.onend   = ()=> log('✅ انتهى النطق بنجاح');
+  u.onerror = e => log(`❌ خطأ: ${(e && e.error) || 'غير معروف'}`);
+  log(`▶️ محاولة نطق: "${text}"`);
+  synth.speak(u);
+  setTimeout(()=>{ if(!synth.speaking && !logs.some(l=>l.startsWith('✅ بدأ'))) log('⚠️ المتصفح قبل الطلب لكن مفيش نطق فعلي — غالبًا مفيش صوت مناسب للغة.'); }, 1200);
+}
+
+$('btnAr').onclick = ()=> say('أهلاً يا بطل، واحد، اتنين، تلاتة', arVoices[0] || null);
+
+$('btnBeep').onclick = ()=>{
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    if(ctx.state === 'suspended') ctx.resume();
+    [660,880,1175].forEach((f,i)=>{
+      const o = ctx.createOscillator(), g = ctx.createGain(), t0 = ctx.currentTime + i*.16;
+      o.type='triangle'; o.frequency.value=f;
+      g.gain.setValueAtTime(.0001,t0);
+      g.gain.exponentialRampToValueAtTime(.25,t0+.02);
+      g.gain.exponentialRampToValueAtTime(.0001,t0+.16);
+      o.connect(g).connect(ctx.destination); o.start(t0); o.stop(t0+.18);
+    });
+    log('🎵 شغّلنا نغمة — لو مسمعتهاش يبقى صوت الجهاز نفسه مكتوم (مش مشكلة في التطبيق). حالة الصوت: ' + ctx.state);
+  }catch(e){ log('❌ فشل تشغيل النغمة: ' + e.message); }
+};
+
+$('btnCopy').onclick = ()=>{
+  const report = [
+    'المتصفح: ' + navigator.userAgent,
+    'عدد الأصوات: ' + voices.length,
+    'أصوات عربية: ' + (arVoices.map(v=>v.name+' / '+v.lang).join(' | ') || 'لا يوجد'),
+    'كل الأصوات: ' + voices.map(v=>v.name+' / '+v.lang).join(' | '),
+    '--- السجل ---', ...logs
+  ].join('\n');
+  navigator.clipboard?.writeText(report).then(
+    ()=> log('📋 اتنسخ! الصقه في الشات.'),
+    ()=> log('⚠️ النسخ مرفوض — اعمل سكرين شوت للصفحة بدل النسخ.')
+  );
+};
+
+refresh();
+if(synth){
+  synth.onvoiceschanged = refresh;
+  let n = 0;
+  const t = setInterval(()=>{ refresh(); if(voices.length || ++n > 20) clearInterval(t); }, 400);
+}
+</script>
+</body>
+</html>
