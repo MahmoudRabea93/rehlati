@@ -1,0 +1,164 @@
+/* ============================================================
+   css/parent.css — دليل ولي الأمر
+   بيستخدم نفس متغيّرات التصميم (--ink, --paper, --line...) وكروت .qcard،
+   لكن بهدوء أكتر من واجهة الطفل: حدود رفيعة، من غير ظلال تقيلة وألوان صارخة.
+   ============================================================ */
+
+.pg{--pg-soft:#EAF5F3;--pg-soft-line:#C5E3DD;--pg-warn:#FFF6E0;--pg-avoid:#FBEFEE;--pg-avoid-line:#E9C3BF;--pg-ok:#E3F5E7}
+
+/* ----- الرأس ----- */
+.pg-head{text-align:center;margin-bottom:14px}
+.pg-head h2{margin:0 0 6px;font-size:clamp(23px,6vw,31px)}
+.pg-lead{margin:0 auto;max-width:34ch;color:var(--ink-soft);font-weight:700;font-size:clamp(15px,3.8vw,18px);line-height:1.7}
+.pg-dhead .pg-big{font-size:48px;line-height:1.1}
+.pg-cat{margin:4px 0 0;color:var(--ink-soft);font-weight:700;font-size:14px}
+
+/* ----- البحث ----- */
+.pg-search{display:block;margin:0 0 12px}
+.pg-slabel{display:block;font-weight:800;margin-bottom:6px;font-size:17px}
+.pg-search input{
+  width:100%;font:inherit;font-size:17px;font-weight:600;color:var(--ink);
+  padding:13px 16px;border-radius:14px;border:2px solid var(--line);background:var(--paper-2);
+}
+.pg-search input::placeholder{color:var(--ink-soft);opacity:.75}
+.pg-search input:focus{outline:3px solid var(--grape);outline-offset:2px;background:var(--paper)}
+
+/* ----- التصنيفات ----- */
+.pg-chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.pg-chip{
+  padding:8px 14px;border-radius:999px;border:2px solid var(--line);background:var(--paper);
+  font-weight:700;font-size:14.5px;color:var(--ink);
+}
+.pg-chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+
+/* ----- البطاقات ----- */
+.pg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px}
+.pg-card{
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;text-align:center;
+  padding:14px 10px;min-height:112px;border-radius:16px;
+  background:var(--paper-2);border:2px solid var(--line);color:var(--ink);
+  transition:border-color .15s,background .15s;
+}
+.pg-card:hover{border-color:var(--ink-soft);background:var(--paper)}
+.pg-ci{font-size:32px;line-height:1.1}
+.pg-ct{font-weight:800;font-size:15px;line-height:1.45}
+
+/* ----- نتائج البحث ----- */
+.pg-hits{display:flex;flex-direction:column;gap:8px}
+.pg-hit{
+  display:flex;align-items:center;gap:12px;text-align:start;padding:12px 14px;border-radius:16px;
+  background:var(--pg-soft);border:2px solid var(--pg-soft-line);color:var(--ink);
+}
+.pg-hit .pg-ci{font-size:30px}
+.pg-ht{font-weight:800;font-size:17px;line-height:1.5}
+.pg-ht small{display:block;font-weight:600;font-size:13px;color:var(--ink-soft)}
+.pg-empty{background:var(--pg-warn);border-radius:14px;padding:12px 14px;margin:0;font-weight:700;line-height:1.7;color:#6B4400}
+
+/* ----- أزرار أسفل الصفحة الرئيسية ----- */
+.pg-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:18px}
+.pg-foot{margin:16px 0 0;font-size:13px;line-height:1.7;color:var(--ink-soft);font-weight:600;text-align:center}
+
+/* ----- أقسام صفحة التفاصيل ----- */
+.pg-sec{border:2px solid var(--line);border-radius:16px;margin-bottom:10px;background:var(--paper);overflow:hidden}
+.pg-sec summary{
+  list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;
+  padding:13px 16px;font-weight:800;font-size:17px;
+}
+.pg-sec summary::-webkit-details-marker{display:none}
+.pg-sec summary::after{content:"▾";margin-inline-start:auto;color:var(--ink-soft);transition:transform .2s}
+.pg-sec[open] summary::after{transform:rotate(180deg)}
+.pg-si{font-size:20px}
+.pg-sb{padding:0 16px 14px;font-size:16px;line-height:1.9}
+.pg-sb p{margin:0 0 8px}
+.pg-sb ul,.pg-sb ol{margin:0 0 8px;padding-inline-start:22px}
+.pg-sb li{margin-bottom:6px}
+.pg-sub{color:var(--ink-soft);font-size:14.5px;font-weight:700;line-height:1.7;margin:0 0 8px}
+
+/* الخطوات */
+.pg-steps li{margin-bottom:10px}
+.pg-say{
+  display:block;margin-top:4px;padding:6px 12px;border-radius:12px;
+  background:var(--pg-soft);border-inline-start:4px solid var(--mint);font-weight:700;font-size:15.5px;
+}
+
+/* الجمل الجاهزة */
+.pg-quote{
+  display:flex;align-items:center;gap:10px;margin:0 0 10px;padding:12px 14px;border-radius:14px;
+  background:var(--pg-soft);border:2px solid var(--pg-soft-line);
+}
+.pg-quote p{flex:1;margin:0;font-weight:700;line-height:1.8}
+.pg-copy{
+  flex:0 0 auto;padding:7px 12px;border-radius:10px;background:var(--paper);border:2px solid var(--pg-soft-line);
+  font-weight:800;font-size:13.5px;color:var(--ink);white-space:nowrap;
+}
+
+/* تجنّب */
+.pg-avoid{list-style:none;padding:0!important}
+.pg-avoid li{
+  margin:0 0 6px;padding:8px 12px;border-radius:12px;background:var(--pg-avoid);
+  border-inline-start:4px solid var(--pg-avoid-line);font-weight:700;
+}
+.pg-avoid li::before{content:"✕ ";color:#B5473F;font-weight:800}
+
+/* بدل / علّمه */
+.pg-teach{width:100%;border-collapse:collapse;font-size:15px}
+.pg-teach th{font-size:13px;color:var(--ink-soft);text-align:start;padding:6px 8px}
+.pg-teach td{padding:9px 10px;border-top:2px solid var(--line);font-weight:700;vertical-align:top}
+.pg-teach td:first-child{color:#8A3B35}
+.pg-teach td:last-child{background:var(--pg-ok);border-radius:10px}
+
+/* خطة ٧ أيام */
+.pg-planhead{font-weight:800;font-size:17px}
+.pg-paused{font-style:normal;color:var(--ink-soft);font-size:14px}
+.pg-days{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:8px;margin:8px 0 10px}
+.pg-day{
+  display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:14px;
+  background:var(--paper-2);border:2px solid var(--line);font-size:13px;color:var(--ink)
+}
+.pg-day span{font-size:22px;line-height:1.2}
+.pg-day.on{background:var(--pg-ok);border-color:#9FD5AB}
+.pg-planbtns{display:flex;flex-wrap:wrap;gap:8px}
+.pg-planbtns .btn{padding:10px 18px;font-size:15px;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+
+/* لوحة الأهداف */
+.pg-focus{display:flex;flex-direction:column;gap:8px}
+.pg-frow{
+  display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;
+  padding:10px 12px;border-radius:14px;background:var(--paper-2);border:2px solid var(--line)
+}
+.pg-frow.paused{opacity:.7}
+.pg-fname{text-align:start;font-weight:800;font-size:16px;color:var(--ink);padding:2px 0}
+.pg-fdays{font-weight:700;font-size:14.5px;color:var(--ink-soft);text-align:end}
+.pg-fbtns{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+.pg-mini{padding:6px 12px;border-radius:10px;background:var(--paper);border:2px solid var(--line);font-weight:700;font-size:13.5px;color:var(--ink)}
+
+/* ----- شاشات الطفل: أكبر وأدفأ ----- */
+.pg-kid{text-align:center}
+.pg-kh{margin:0 0 6px}
+.pg-kgrid{margin-top:14px}
+.pg-kicon{font-size:clamp(52px,16vw,76px);line-height:1.1;margin-bottom:6px}
+.pg-kq{margin:0 0 16px;font-size:clamp(22px,6vw,30px);line-height:1.5}
+.pg-opts{display:flex;flex-direction:column;gap:12px;max-width:520px;margin:0 auto}
+.pg-opt{
+  width:100%;padding:16px 18px;border-radius:22px;background:var(--paper);color:var(--ink);
+  border:3px solid var(--line);font-weight:800;font-size:clamp(17px,4.6vw,21px);line-height:1.6;
+  box-shadow:0 5px 0 var(--shadow);transition:transform .1s;
+}
+.pg-opt:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 var(--shadow)}
+.pg-opt.ok{background:#DDF6E2;border-color:var(--grass-dark)}
+.pg-opt.no{background:#F6F1EC;border-color:var(--line);opacity:.65}
+.pg-opt.hint{outline:4px dashed var(--grass-dark);outline-offset:2px}
+.pg-opt:disabled{cursor:default}
+.pg-fb{margin-top:16px;min-height:8px}
+.pg-fb p{margin:0 0 6px;font-weight:700;font-size:clamp(16px,4.4vw,19px);line-height:1.7}
+.pg-fb.soft p{color:var(--ink-soft)}
+.pg-fb .btn{margin-top:10px}
+.pg-star{font-size:44px;line-height:1.1}
+
+@media (prefers-reduced-motion:reduce){
+  .pg-card,.pg-opt,.pg-sec summary::after{transition:none}
+}
+@media (max-width:420px){
+  .pg-quote{flex-direction:column;align-items:stretch}
+  .pg-copy{align-self:flex-start}
+}

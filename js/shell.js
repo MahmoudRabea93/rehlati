@@ -50,6 +50,7 @@ const Shell = (() => {
 
       <div class="center" style="margin-top:18px">
         <button class="btn ghost" id="btnBadges">🏆 إنجازاتي (${ar(Rewards.earned().length)})</button>
+        <button class="btn ghost" id="btnKidPG">🧒 أتعلم أتصرف إزاي؟</button>
       </div>
       <div class="lion" id="lion">🦁</div>`;
 
@@ -60,6 +61,7 @@ const Shell = (() => {
       if(id === 'quran') QuranWorld.open();
       else UI.worldMap(id);
     });
+    document.getElementById('btnKidPG').onclick = () => ParentGuide.kidHub('shell');
     document.getElementById('btnBadges').onclick = () => {
       UI.bar({back:'shell', title:'🏆 إنجازاتي'});
       Rewards.screen();
@@ -138,6 +140,8 @@ const Shell = (() => {
         <h3 style="margin:18px 0 6px">🗺️ العوالم</h3>
         <table class="dtable"><thead><tr><th>العالم</th><th>النجوم</th><th>الإنجاز</th></tr></thead><tbody>${worldRows}</tbody></table>
 
+        ${ParentGuide.dashCard()}
+
         <h3 style="margin:18px 0 6px">🧠 مهارات محتاجة تدريب</h3>
         <table class="dtable"><thead><tr><th>المرحلة</th><th>المهارة</th><th>الأخطاء</th></tr></thead><tbody>${weak}</tbody></table>
 
@@ -155,7 +159,8 @@ const Shell = (() => {
 
         <div class="order-hint" style="margin-top:14px;text-align:start">آخر نشاط: ${fmtDate(p.lastActivity)}</div>
         <div class="center" style="margin-top:16px">
-          <button class="btn" id="dGuide">📘 دليل الوالدين</button>
+          <button class="btn" id="dPG">❤️ دليل ولي الأمر</button>
+          <button class="btn ghost" id="dGuide">📘 دليل الوالدين</button>
           <button class="btn ghost" id="dBack">رجوع</button>
         </div>
       </div>`;
@@ -167,6 +172,8 @@ const Shell = (() => {
       }).catch(() => { visitEl.textContent = '—'; });
     }
 
+    ParentGuide.bindDash(dashboard);
+    document.getElementById('dPG').onclick = () => ParentGuide.home();
     document.getElementById('dBack').onclick = home;
     document.getElementById('dGuide').onclick = () => { UI.bar({back:'shell', title:'📘 دليل الوالدين'}); Guide.screen(); };
     document.getElementById('dName').onclick = () => {

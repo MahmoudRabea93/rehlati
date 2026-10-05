@@ -20,6 +20,7 @@ const UI = (() => {
       Audio_.stop();
       if(window.QuranWorld) QuranWorld.stop();
       if(back === 'shell') Shell.home();
+      else if(back === 'pg') ParentGuide.home();
       /* القرآن مالوش خريطة مراحل زي باقي العوالم — ليه شاشاته الخاصة،
          فلازم يتشاف قبل WORLDS_META عشان ما يروحش لخريطة فاضية */
       else if(back === 'quran') QuranWorld.open();
@@ -428,6 +429,7 @@ const UI = (() => {
     document.getElementById('btnGuide').onclick  = ()=>{
       closeSheet(); bar({back:'shell', title:'📘 دليل الوالدين'}); Guide.screen();
     };
+    document.getElementById('btnPG').onclick = ()=>{ closeSheet(); ParentGuide.home(); };
     document.getElementById('btnParent').onclick = ()=>{ closeSheet(); Shell.askParent(); };
     document.getElementById('btnCloseSheet').onclick = closeSheet;
     document.getElementById('btnReset').onclick = ()=>{
