@@ -65,12 +65,25 @@ const UI = (() => {
         <p>${world==='english' ? 'Pick a game and start' : 'اختار لعبة وابدأ المغامرة'}</p>
       </section>
       <nav class="map">${cards}</nav>
+      <div class="devrow">
+        <span>🔓 فتح كل المراحل (للتطوير)</span>
+        <button class="switch" id="swDevMap" role="switch" aria-checked="${!!p.settings.dev}"></button>
+      </div>
       <div class="lion" id="lion">🦁</div>
       </div>`;
+
+    /* مفتاح التطوير بقى جوه شاشة المستوى نفسها بدل الإعدادات */
+    const dev = document.getElementById('swDevMap');
+    if(dev) dev.onclick = () => {
+      const st = Progress.get().settings;
+      st.dev = !st.dev; Progress.save();
+      worldMap(world);
+    };
 
     screen.querySelectorAll('.stage').forEach(el=>{
       el.onclick = () => {
         const id = el.dataset.id;
+        if(Progress.limitReached()) return timeUp(world);
         if(!Progress.isUnlocked(id)){
           say('المرحلة دي مقفولة 🔒 خلّص اللي قبلها الأول');
           Audio_.bad(); Audio_.speak('المرحلة دي مقفولة، خلص اللي قبلها الأول', ['locked']);
@@ -81,6 +94,29 @@ const UI = (() => {
         else if(pack.learn) LetterBoard.open(pack); else Engine.start(id);
       };
     });
+  }
+
+  /* خلص وقت اللعب النهاردة — رسالة لطيفة، مش منع جاف */
+  function timeUp(back){
+    bar({back: back || 'shell', title:'وقت الراحة'});
+    const p = Progress.get();
+    screen.innerHTML = `
+      <div class="qcard center">
+        <div class="lion" style="margin:0 auto">🌙</div>
+        <h2 style="margin:8px 0 2px">خلاص يا بطل، بكرة نكمّل!</h2>
+        <p class="order-hint" style="font-size:16px">
+          لعبت النهاردة ${ar(Progress.todayMin())} دقيقة، وده كفاية عشان عينيك ترتاح.
+          ${Progress.goalDone() ? 'وكمان خلّصت هدف النهاردة ⭐' : ''}
+        </p>
+        <div class="bubble ok">🔥 سلسلتك ${ar(Progress.streak())} يوم — حافظ عليها بكرة!</div>
+        <div style="margin-top:14px">
+          <button class="btn ghost" id="btnTuHome">🏠 الصفحة الرئيسية</button>
+          <button class="btn ghost" id="btnTuParent">👨‍👩‍👦 ولي الأمر</button>
+        </div>
+      </div>`;
+    Audio_.speak('خلاص يا بطل، بكرة نكمل');
+    document.getElementById('btnTuHome').onclick = () => Shell.home();
+    document.getElementById('btnTuParent').onclick = () => Shell.askParent();
   }
 
   function say(text){
@@ -163,7 +199,7 @@ const UI = (() => {
     }else if(q.mode === 'sort'){
       body = `
         <div class="ask-row"><h2 class="ask">${q.ask}</h2>${sayBtn()}</div>
-        <div class="sortboxes">
+        <div class="sortboxes ${q.boxes.length === 2 ? 'two' : ''}">
           ${q.boxes.map(b=>`<button class="sbox t-${b.key}" data-t="${b.key}" aria-label="${b.label}">
             <span class="slabel">${b.label}</span><span class="sbody"></span></button>`).join('')}
         </div>
@@ -175,7 +211,7 @@ const UI = (() => {
       body = `
         <div class="ask-row"><h2 class="ask">${q.ask}</h2>${sayBtn()}</div>
         ${q.visual}
-        <div class="order-hint">اضغط الرقم الناقص</div>
+        <div class="order-hint">${q.orderHint || 'اضغط الرقم الناقص'}</div>
         <div class="choices">
           ${q.items.map(n=>`<button class="choice" data-v="${n}" style="--c:${st.stage.color}">${ar(n)}</button>`).join('')}
         </div>`;
@@ -345,6 +381,14 @@ const UI = (() => {
         </div>
       </div>`;
     if(good){ confetti(60); popMsg('🎉 أحسنت!', true); } else { confetti(10); }
+    /* هدف اليوم اتحقق لأول مرة النهاردة — احتفال صغير مرة واحدة بس */
+    if(Progress.celebrate()){
+      setTimeout(() => {
+        confetti(70);
+        popMsg(`🎯 خلّصت هدف النهاردة! 🔥 ${ar(Progress.streak())} يوم`, true);
+        Audio_.speak('برافو! خلصت هدف النهاردة');
+      }, 1200);
+    }
     Audio_.speak([
       good ? 'أحسنت يا بطل' : 'محاولة حلوة، نجرب تاني',
       `جبت ${arNum(correct)} من ${arNum(total)}`,
@@ -429,7 +473,7 @@ const UI = (() => {
     const s = Progress.get().settings;
     document.getElementById('swSpeech').setAttribute('aria-checked', !!s.speech);
     document.getElementById('swSfx').setAttribute('aria-checked', !!s.sfx);
-    document.getElementById('swDev').setAttribute('aria-checked', !!s.dev);
+    document.getElementById('swMusic').setAttribute('aria-checked', !!s.music);
     const info = document.getElementById('voiceInfo');
     const ok = !!Audio_.voiceName();
     info.innerHTML = Audio_.report().map(l=>`• ${l}`).join('<br>') + (ok ? '' :
@@ -467,7 +511,7 @@ const UI = (() => {
     const s = () => Progress.get().settings;
     document.getElementById('swSpeech').onclick = ()=>{ s().speech = !s().speech; Progress.save(); syncSwitches(); if(!s().speech) Audio_.stop(); };
     document.getElementById('swSfx').onclick    = ()=>{ s().sfx = !s().sfx; Progress.save(); syncSwitches(); if(s().sfx) Audio_.good(); };
-    document.getElementById('swDev').onclick    = ()=>{ s().dev = !s().dev; Progress.save(); syncSwitches(); mathMap(); };
+    document.getElementById('swMusic').onclick  = ()=>{ Music.toggle(); syncSwitches(); };
     document.getElementById('btnTest').onclick = ()=>{
       Audio_.unlock();
       Progress.get().settings.speech = true; Progress.save(); syncSwitches();
@@ -488,6 +532,6 @@ const UI = (() => {
   }
 
   return {mathMap, worldMap, bar, bumpStars, sortPlace, confetti, popMsg, gameScreen, renderQuestion, renderDots, correct, wrong, fillSlot, markNext,
-          resultScreen, bindSettings, setBubble};
+          resultScreen, bindSettings, setBubble, timeUp};
 })();
 

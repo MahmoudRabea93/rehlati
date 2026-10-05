@@ -22,6 +22,30 @@ const Madd = (() => {
   const hl = (syl, key) => `${esc(baseOf(syl))}<span class="hl t-${key}">${esc(syl.slice(-1))}</span>`;
   const label = t => `${t.box} ${t.name}`;
 
+  /* ---------- المد والممدود ----------
+     الممدود = الحرف المتحرّك اللي بنمدّ صوته (أول حرف في المقطع)
+     المد    = حرف المد بعده مباشرة (آخر حرف في المقطع)   مثال: سَا → س ممدود، ا مد */
+  const mamdoudOf  = syl => syl[0];                 // سَا → س
+  const maddCharOf = syl => syl.slice(-1);          // سَا → ا
+  /* الممدود في إطار، وحرف المد بلون نوعه — شكلين مختلفين مش لونين بس */
+  function hlPair(text, syl, key){
+    const i = text.indexOf(syl);
+    if(i < 0) return esc(text);
+    const mi = i + syl.length - 1;
+    return esc(text.slice(0, i))
+      + `<span class="hlm">${esc(text.slice(i, mi))}</span>`
+      + `<span class="hl t-${key}">${esc(text[mi])}</span>`
+      + esc(text.slice(mi + 1));
+  }
+  /* حروف غلط مش حروف مد ومش موجودة في الكلمة */
+  const fillers = (not, n) => shuffle(MADD_DISTRACTORS.filter(c => !not.includes(c))).slice(0, n);
+  /* نضمن عدد اختيارات مناسب حتى لو الكلمة حروفها قليلة (زي باب) */
+  function choicesOf(answer, must, pool, n){
+    const out = [...new Set([answer, ...must, ...pool])].slice(0, n);
+    if(out.length < n) out.push(...fillers(out, n - out.length));
+    return shuffle(out);
+  }
+
   /* ---------- التخزين: نفس كائن التقدّم الموحّد (rehlati.math.v1) ---------- */
   function store(){
     const p = Progress.get();
@@ -259,6 +283,103 @@ const Madd = (() => {
         hint:'اقرأ الكلمات ببطء 📖', speakHint:'اقرأ الكلمات ببطء',
         okMsg:`أحسنت! ${w.w} ⭐`, sayRight: w.w
       };
+    },
+
+    /* ============ المد والممدود ============ */
+
+    /* من الحرف الممدود في المقطع؟  سَا → س */
+    mamdoudSyl(cfg, lv, o){
+      const key = pickType(cfg, o), T = byKey(key);
+      const syl = normalize(pickSyl(key, lv), key);
+      const ans = mamdoudOf(syl), mad = maddCharOf(syl);
+      return {
+        mode:'choice', skill:'madd:' + key, mtype:key, gentle:true, bigChoices:true,
+        ask:'من الحرف المَمْدود؟', speak:`${say(syl)} . من الحرف الممدود؟`,
+        visual:`<div class="mformula" id="mformula"><span class="msyl big">${esc(syl)}</span>
+                <button class="mlisten sm" data-say="${esc(say(syl))}" aria-label="اسمع">🔊</button></div>`,
+        choices: choicesOf(ans, [mad], [], lv >= 3 ? 4 : 3), answer: ans,
+        hint:'الممدود هو الحرف الأول الذي نمدّ صوته 👆', speakHint:'الممدود هو الحرف الأول الذي نمد صوته',
+        okMsg:`⭐ أحسنت! ${ans} هو الممدود، و${mad} هو حرف المد — ${T.name}`, sayRight: say(syl),
+        reveal:() => { const f = document.getElementById('mformula');
+          if(f) f.innerHTML = `<span class="msyl big pop">${hlPair(syl, syl, key)}</span>`; }
+      };
+    },
+
+    /* ومن حرف المد في المقطع؟  سَا → ا */
+    maddInSyl(cfg, lv, o){
+      const key = pickType(cfg, o), T = byKey(key);
+      const syl = normalize(pickSyl(key, lv), key);
+      const ans = maddCharOf(syl);
+      return {
+        mode:'choice', skill:'madd:' + key, mtype:key, gentle:true, bigChoices:true,
+        ask:'من حرف المد؟', speak:`${say(syl)} . من حرف المد؟`,
+        visual:`<div class="mformula" id="mformula"><span class="msyl big">${esc(syl)}</span>
+                <button class="mlisten sm" data-say="${esc(say(syl))}" aria-label="اسمع">🔊</button></div>`,
+        choices: shuffle([mamdoudOf(syl), ...LETTERS]), answer: ans,
+        hint:'حرف المد هو الحرف الأخير: ا أو و أو ي 👀', speakHint:'حرف المد هو الحرف الأخير',
+        okMsg:`⭐ ممتاز! ${ans} هو ${T.letterWord} — حرف المد`, sayRight: say(syl),
+        reveal:() => { const f = document.getElementById('mformula');
+          if(f) f.innerHTML = `<span class="msyl big pop">${hlPair(syl, syl, key)}</span>`; }
+      };
+    },
+
+    /* من الحرف الممدود في الكلمة؟  سَاجِد → س */
+    mamdoudWord(cfg, lv, o){
+      const w = pickWord(lv, o), T = byKey(w.type);
+      const ans = mamdoudOf(w.madd), mad = maddCharOf(w.madd);
+      const others = [...new Set(w.plain.split(''))].filter(c => c !== ans && c !== mad);
+      return {
+        mode:'choice', skill:'madd_word:' + w.plain, mword:w.plain, mtype:w.type, gentle:true, bigChoices:true,
+        ask:'من الحرف المَمْدود في الكلمة؟', speak:`${w.w} . من الحرف الممدود؟`,
+        visual:`<div class="stage-items"><span class="item">${w.e}</span></div>
+                <div class="mformula" id="mformula"><span class="msyl big">${esc(w.w)}</span>
+                <button class="mlisten sm" data-say="${esc(w.w)}" aria-label="اسمع">🔊</button></div>`,
+        choices: choicesOf(ans, [mad], others, 4), answer: ans,
+        hint:'الحرف الذي نمدّ صوته، وبعده حرف المد 🔎', speakHint:'ابحث عن الحرف الذي نمد صوته',
+        okMsg:`أحسنت! ${ans} ممدود بـ${T.letterWord} ← ${w.madd} ⭐`, sayRight: w.w,
+        reveal:() => { const f = document.getElementById('mformula');
+          if(f) f.innerHTML = `<span class="msyl big pop">${hlPair(w.w, w.madd, w.type)}</span>`; }
+      };
+    },
+
+    /* ومن حرف المد في الكلمة؟  سَاجِد → ا */
+    maddWord(cfg, lv, o){
+      const w = pickWord(lv, o), T = byKey(w.type);
+      const ans = maddCharOf(w.madd), mam = mamdoudOf(w.madd);
+      const others = [...new Set(w.plain.split(''))].filter(c => c !== ans && c !== mam);
+      return {
+        mode:'choice', skill:'madd_word:' + w.plain, mword:w.plain, mtype:w.type, gentle:true, bigChoices:true,
+        ask:'من حرف المد في الكلمة؟', speak:`${w.w} . من حرف المد؟`,
+        visual:`<div class="stage-items"><span class="item">${w.e}</span></div>
+                <div class="mformula" id="mformula"><span class="msyl big">${esc(w.w)}</span>
+                <button class="mlisten sm" data-say="${esc(w.w)}" aria-label="اسمع">🔊</button></div>`,
+        choices: choicesOf(ans, [mam], others, 4), answer: ans,
+        hint:'حرف المد هو: ا أو و أو ي 👀', speakHint:'حرف المد هو ألف أو واو أو ياء',
+        okMsg:`ممتاز! ${ans} هو حرف المد — ${T.name} 👏`, sayRight: w.w,
+        reveal:() => { const f = document.getElementById('mformula');
+          if(f) f.innerHTML = `<span class="msyl big pop">${hlPair(w.w, w.madd, w.type)}</span>`; }
+      };
+    },
+
+    /* صنّف: صندوق للممدود وصندوق لحرف المد */
+    pairSort(cfg, lv){
+      const n = lv >= 3 ? 4 : 3;
+      const keys = shuffle([...MADD_TYPES.map(t => t.key), sample(MADD_TYPES).key]).slice(0, n);
+      const cards = [];
+      keys.forEach(k => {
+        const syl = normalize(sample(byKey(k).examples), k);
+        cards.push({text:baseOf(syl),       say:say(syl),            type:'mamdoud'});
+        cards.push({text:maddCharOf(syl),   say:byKey(k).letterWord, type:'maddletter'});
+      });
+      return {
+        mode:'sort', skill:'madd:pair', gentle:true,
+        ask:'ضع كل حرف في صندوقه', speak:'ضع الحرف الممدود في صندوقه، وحرف المد في صندوقه',
+        orderHint:'اضغط الحرف ثم اضغط الصندوق (أو اسحبه)',
+        boxes:[{key:'mamdoud', label:'🔤 الحرف الممدود'}, {key:'maddletter', label:'〰️ حرف المد'}],
+        cards: shuffle(cards),
+        hint:'حروف المد ثلاثة فقط: ا و ي — والباقي ممدود 👀',
+        speakHint:'حروف المد ثلاثة فقط: ألف وواو وياء'
+      };
     }
   };
 
@@ -286,7 +407,11 @@ const Madd = (() => {
     {id:'madd_complete', lesson:'complete', icon:'✏️', name:'أكمل المقطع',          base:2, color:'#E05FA8', types:ALL, kinds:['letter','listen','type']},
     {id:'madd_compose',  lesson:'compose',  icon:'🧩', name:'كوّن المقطع',          base:2, color:'#FF7A59', types:ALL, kinds:['compose','sort','read']},
     {id:'madd_find',     lesson:'find',     icon:'🕵️', name:'اكتشف المد في الكلمة', base:3, color:'#1FAE9B', types:ALL, kinds:['find','wordtype']},
-    {id:'madd_read',     lesson:'read',     icon:'📖', name:'اقرأ كلمات المدود',    base:3, color:'#4C6FFF', types:ALL, kinds:['wordread','wordpic','wordtype']}
+    {id:'madd_read',     lesson:'read',     icon:'📖', name:'اقرأ كلمات المدود',    base:3, color:'#4C6FFF', types:ALL, kinds:['wordread','wordpic','wordtype']},
+    /* المرحلة ٩ — التمييز بين الحرف الممدود وحرف المد (سَاجِد: الممدود س، المد ا).
+       لو عايزها أبدر في الترتيب، حرّك السطر ده لمكان أعلى في المصفوفة. */
+    {id:'madd_mamdoud',  lesson:'mamdoud',  icon:'🎯', name:'المد والممدود',        base:3, color:'#7A4FD1', types:ALL,
+     kinds:['mamdoudSyl','maddInSyl','pairSort','mamdoudWord','maddWord']}
   ];
 
   /* لكل (مرحلة × نوع لعبة) نسجّل مولّدًا باسم فريد — عشان "تدريب على الأخطاء"
@@ -358,6 +483,29 @@ const Madd = (() => {
         <div class="mexamples">
           ${T.examples.map(e => `<button class="mex t-${T.key}" data-say="${esc(say(e))}" aria-label="${esc(e)}">
             <span class="mfrom">${esc(baseOf(e))}</span><span class="marrow">←</span><span class="mto">${hl(e, T.key)}</span></button>`).join('')}
+        </div>`;
+    }else if(pack.lesson === 'mamdoud'){                          // المرحلة ٩: المد والممدود
+      const demo = MADD_WORDS.find(w => w.plain === 'ساجد') || MADD_WORDS[0];
+      const dMam = mamdoudOf(demo.madd), dMad = maddCharOf(demo.madd);
+      /* مقطع من كل نوع + الكلمة المثال */
+      const sylEx = MADD_TYPES.map(T => ({syl:normalize(T.examples[2] || T.examples[0], T.key), key:T.key}));
+      inner = `
+        <h3 class="mrule">في كل مد حرفان: حرف نمدّه، وحرف يمدّه</h3>
+        <div class="mpairf">
+          <div class="mpairw">${hlPair(demo.w, demo.madd, demo.type)}</div>
+          <div class="mlegend">
+            <button class="mchip mam" data-say="${esc(dMam)} الممدود" aria-label="الحرف الممدود">
+              <span class="mchipl">الحرف المَمْدود</span><span class="mchipv">${esc(dMam)}</span></button>
+            <button class="mchip mad t-${demo.type}" data-say="${esc(dMad === 'ا' ? 'ألف' : dMad)} حرف المد" aria-label="حرف المد">
+              <span class="mchipl">حرف المد</span><span class="mchipv">${esc(dMad)}</span></button>
+          </div>
+          <p class="mnote">نمدّ صوت <b>${esc(dMam)}</b> بـ<b>${esc(dMad)}</b> فتصير <b>${esc(demo.madd)}</b> — ${esc(demo.w)}</p>
+          <button class="btn" data-say="${esc(demo.w)}">🔊 اسمع الكلمة</button>
+        </div>
+        <div class="order-hint" style="margin-top:14px">اضغط أي مقطع لتسمعه</div>
+        <div class="mexamples">
+          ${sylEx.map(x => `<button class="mex t-${x.key}" data-say="${esc(say(x.syl))}" aria-label="${esc(x.syl)}">
+            <span class="mto">${hlPair(x.syl, x.syl, x.key)}</span></button>`).join('')}
         </div>`;
     }else if(pack.lesson === 'find' || pack.lesson === 'read'){   // المراحل ٧–٨: كلمات
       const sample3 = MADD_TYPES.map(t => MADD_WORDS.find(w => w.type === t.key && w.lvl === 1));
@@ -459,7 +607,8 @@ const Madd = (() => {
       ['المد بالياء',       groupState(['madd_yaa'])],
       ['التمييز بين المدود', groupState(['madd_types'])],
       ['المقاطع',           groupState(['madd_complete', 'madd_compose'])],
-      ['الكلمات',           groupState(['madd_find', 'madd_read'])]
+      ['الكلمات',           groupState(['madd_find', 'madd_read'])],
+      ['المد والممدود',     groupState(['madd_mamdoud'])]
     ];
     const tot = Object.values(m.types).reduce((a, t) => ({ok:a.ok + t.ok, tries:a.tries + t.tries}), {ok:0, tries:0});
     const level = stageIds().filter(id => Progress.isUnlocked(id)).length;

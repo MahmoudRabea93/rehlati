@@ -15,11 +15,88 @@ const BADGES = [
   {id:'quran5',      icon:'🕌', name:'٥ أنشطة قرآن',        when:p => Object.keys(p.quran||{}).length >= 5}
 ];
 
+/* ============================================================
+   مراحل تقدّم الطفل — كؤوس بتتفتح بالنجوم المجمّعة
+   كل مرحلة ليها كأس واسم ولون، والطفل بيشوف الكأس الجاي
+   والنجوم الفاضلة عليه — ده أقوى محفّز بعد السلسلة اليومية.
+   لزيادة مرحلة: ضيف سطر هنا وبس.
+   ============================================================ */
+const RANKS = [
+  {id:'egg',      icon:'🥚', name:'مبتدئ',        at:0,    color:'#A9B4C2'},
+  {id:'bronze',   icon:'🥉', name:'كأس برونزي',   at:50,   color:'#C97B3C'},
+  {id:'silver',   icon:'🥈', name:'كأس فضي',      at:150,  color:'#9AA7B4'},
+  {id:'gold',     icon:'🏆', name:'كأس ذهبي',     at:350,  color:'#E0A400'},
+  {id:'platinum', icon:'🥇', name:'كأس بلاتيني',  at:650,  color:'#5FA8C7'},
+  {id:'diamond',  icon:'💎', name:'كأس ماسي',     at:1000, color:'#3FC2D6'},
+  {id:'crown',    icon:'👑', name:'بطل الأبطال',  at:1500, color:'#8B5CF6'}
+];
+
 const Rewards = {
+  /* ---------- المراحل والكؤوس ---------- */
+  RANKS,
+  rankIndex(stars){
+    const s = stars === undefined ? Progress.get().stars : stars;
+    let i = 0;
+    RANKS.forEach((r, k) => { if(s >= r.at) i = k; });
+    return i;
+  },
+  rank(){ return RANKS[this.rankIndex()]; },
+  nextRank(){ return RANKS[this.rankIndex() + 1] || null; },
+  /* نسبة التقدّم ناحية الكأس الجاي */
+  rankPct(){
+    const i = this.rankIndex(), nx = RANKS[i + 1];
+    if(!nx) return 100;
+    const from = RANKS[i].at, s = Progress.get().stars;
+    return Math.max(0, Math.min(100, Math.round((s - from) / (nx.at - from) * 100)));
+  },
+  starsToNext(){
+    const nx = this.nextRank();
+    return nx ? Math.max(0, nx.at - Progress.get().stars) : 0;
+  },
+  /* ترقية؟ بتتنادى بعد كل جولة — بتحتفل مرة واحدة لكل كأس */
+  rankCheck(){
+    const p = Progress.get();
+    const now = this.rankIndex();
+    /* أول مرة: بنسجّل المرحلة الحالية من غير احتفال (عشان التقدّم القديم) */
+    if(p.rankSeen === undefined){ p.rankSeen = now; Progress.save(); return null; }
+    if(now <= p.rankSeen) return null;
+    p.rankSeen = now; Progress.save();
+    const r = RANKS[now];
+    setTimeout(() => this.rankToast(r), 900);
+    return r;
+  },
+  rankToast(r){
+    const t = document.createElement('div');
+    t.className = 'rank-toast';
+    t.style.setProperty('--rc', r.color);
+    t.innerHTML = `<span class="bi">${r.icon}</span><span><b>مرحلة جديدة!</b><br>${r.name}</span>`;
+    document.body.appendChild(t);
+    Audio_.win();
+    if(UI && UI.confetti) UI.confetti(80);
+    Audio_.speak(`مبروك! وصلت ${r.name}`);
+    setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 500); }, 4200);
+  },
+  /* شريط الكأس — بيتحط في الرئيسية وفي لوحة ولي الأمر */
+  rankBar(){
+    const r = this.rank(), nx = this.nextRank(), pct = this.rankPct();
+    return `
+      <div class="rankbar" style="--rc:${r.color}">
+        <span class="rkcup">${r.icon}</span>
+        <span class="rkmeta">
+          <span class="rkname">${r.name}</span>
+          <span class="rkbar"><i style="width:${pct}%"></i></span>
+          <span class="rknote">${nx
+            ? `فاضل ${ar(this.starsToNext())} نجمة على ${nx.icon} ${nx.name}`
+            : 'وصلت لأعلى مرحلة — ما شاء الله 🎉'}</span>
+        </span>
+      </div>`;
+  },
+
   earned(){ return Progress.get().achievements || []; },
   check(){
     const p = Progress.get();
     p.achievements = p.achievements || [];
+    this.rankCheck();
     const fresh = BADGES.filter(b => !p.achievements.includes(b.id) && b.when(p));
     if(!fresh.length) return [];
     fresh.forEach(b => p.achievements.push(b.id));
@@ -41,6 +118,16 @@ const Rewards = {
     document.getElementById('screen').innerHTML = `
       <div class="qcard">
         <h2 class="center" style="margin:0 0 4px">🏆 إنجازاتي</h2>
+        ${this.rankBar()}
+        <h3 style="margin:16px 0 6px">🏅 مراحل التقدّم</h3>
+        <div class="cups">
+          ${RANKS.map((r, i) => `<div class="cup ${i <= this.rankIndex() ? 'got' : ''}" style="--rc:${r.color}">
+            <span class="ci">${i <= this.rankIndex() ? r.icon : '🔒'}</span>
+            <span class="cn">${r.name}</span>
+            <span class="cs">${ar(r.at)} ⭐</span>
+          </div>`).join('')}
+        </div>
+        <h3 style="margin:18px 0 6px">⭐ الإنجازات</h3>
         <div class="order-hint">${ar(got.length)} من ${ar(BADGES.length)}</div>
         <div class="badges">
           ${BADGES.map(b => `<div class="badge ${got.includes(b.id)?'got':''}">
@@ -50,3 +137,6 @@ const Rewards = {
       </div>`;
   }
 };
+
+/* نسجّل الموديول على window عشان المحرك يلاقيه (const مابيتسجّلش تلقائيًا) */
+window.Rewards = Rewards;

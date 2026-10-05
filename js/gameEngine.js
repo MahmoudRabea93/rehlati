@@ -23,7 +23,8 @@ const Engine = (() => {
     const childLv = Progress.level(stage.world);
     level = Math.min(Math.max(stage.base, Math.min(childLv, stage.base+1)), 4);
 
-    const count = practice ? PRACTICE_COUNT : QUESTIONS_PER_ROUND;
+    /* مراحل طويلة (زي الجدول الفاضي) ممكن تحدّد عدد أسئلتها بنفسها */
+    const count = practice ? PRACTICE_COUNT : (stage.count || QUESTIONS_PER_ROUND);
     list = [];
     if(practice && opts.types && opts.types.length){
       for(let i=0;i<count;i++) list.push(makeQuestion(sample(opts.types), level));

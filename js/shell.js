@@ -14,9 +14,32 @@ const Shell = (() => {
   const worldStars = w => Progress.starsIn(w);
   const esc = t => String(t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 
+  /* شريط الهدف اليومي + سلسلة الأيام — بيظهر فوق كروت العوالم */
+  function dailyStrip(){
+    const goal = Progress.goal(), got = Progress.todayStars(), pct = Progress.goalPct();
+    const st = Progress.streak(), left = Progress.limitLeft();
+    const done = Progress.goalDone();
+    return `
+      <div class="daily">
+        <div class="dstreak ${st ? 'hot' : ''}">
+          <span class="dfire">${st ? '🔥' : '🌱'}</span>
+          <b>${ar(st)}</b><span class="dlab">${st === 1 ? 'يوم' : 'أيام'} متتالية</span>
+        </div>
+        <div class="dgoal">
+          <div class="dgtop"><span>🎯 هدف اليوم</span><b>${ar(got)} / ${ar(goal)} ⭐</b></div>
+          <div class="dbar"><i class="${done ? 'done' : ''}" style="width:${pct}%"></i></div>
+          <div class="dnote">${done
+            ? '🎉 خلّصت هدف النهاردة — أي نجمة زيادة مكسب!'
+            : `فاضل ${ar(Math.max(0, goal - got))} نجمة`}${
+            isFinite(left) ? ` • باقي ${ar(left)} دقيقة لعب` : ''}</div>
+        </div>
+      </div>`;
+  }
+
   function home(){
     Audio_.stop();
     if(window.QuranWorld) QuranWorld.stop();
+    if(window.Music) Music.quiet(false);     /* رجّعنا الموسيقى بعد الخروج من القرآن */
     const p = Progress.get();
     UI.bar({title:`المستوى ${ar(Progress.level())}`});
     screen().innerHTML = `
@@ -29,21 +52,25 @@ const Shell = (() => {
         <p>اختار عالم وابدأ المغامرة</p>
       </section>
 
-      <div class="journey">
-        <div class="jnode">🏠 البداية</div>
+      ${dailyStrip()}
+      <div class="rankwrap">${Rewards.rankBar()}</div>
+
+      <div class="wgrid">
         ${WORLDS.map(w => {
           const stars = worldStars(w.id);
           const pct = w.id === 'quran' ? Math.min(stars * 4, 100) : Progress.worldPct(w.id);
           return `
-          <div class="jline"></div>
-          <button class="world" data-w="${w.id}" style="--c:${w.color}">
-            <span class="wi">${w.icon}</span>
+          <button class="world card" data-w="${w.id}" style="--c:${w.color}">
+            <span class="wtop">
+              <span class="wi">${w.icon}</span>
+              <span class="wstars">⭐ ${ar(stars)}</span>
+            </span>
             <span class="wmeta">
               <span class="wn">${esc(w.name)}</span>
               <span class="wd">${esc(w.desc)}</span>
               <span class="wbar"><i style="width:${pct}%;background:${w.color}"></i></span>
+              <span class="wpct">${ar(pct)}٪</span>
             </span>
-            <span class="wstars">⭐ ${ar(stars)}</span>
           </button>`;
         }).join('')}
       </div>
@@ -58,6 +85,7 @@ const Shell = (() => {
 
     screen().querySelectorAll('.world').forEach(b => b.onclick = () => {
       const id = b.dataset.w;
+      if(Progress.limitReached()) return UI.timeUp('shell');   /* خلص وقت اللعب النهاردة */
       if(id === 'quran') QuranWorld.open();
       else UI.worldMap(id);
     });
@@ -78,6 +106,84 @@ const Shell = (() => {
     const d = new Date(ts);
     return ar(`${d.getDate()}/${d.getMonth()+1} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`);
   };
+
+  /* ---------- التقرير الأسبوعي ---------- */
+  const DAY_AR = ['أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
+  const accOf = w => (w.correct + w.wrong) ? Math.round(w.correct / (w.correct + w.wrong) * 100) : null;
+
+  function weekCard(){
+    const days = Progress.week(), now = Progress.weekSum(), prev = Progress.weekSum(1);
+    const peak = Math.max(1, ...days.map(d => d.stars));
+    const a1 = accOf(now), a0 = accOf(prev);
+
+    /* مقارنة بالأسبوع اللي فات — بنقول اتحسّن في إيه ومحتاج إيه */
+    const up = [], need = [];
+    const cmp = (label, a, b, unit) => {
+      if(!b && !a) return;
+      if(a > b * 1.1) up.push(`${label} زادت (${ar(a)}${unit} بعد ${ar(b)}${unit})`);
+      else if(b && a < b * .85) need.push(`${label} قلّت (${ar(a)}${unit} بعد ${ar(b)}${unit})`);
+    };
+    cmp('النجوم', now.stars, prev.stars, '');
+    cmp('الألعاب', now.games, prev.games, '');
+    cmp('أيام اللعب', now.days, prev.days, '');
+    if(a1 !== null && a0 !== null){
+      if(a1 >= a0 + 5) up.push(`دقة الإجابات اتحسّنت (${ar(a1)}٪ بعد ${ar(a0)}٪)`);
+      else if(a1 <= a0 - 5) need.push(`دقة الإجابات نزلت (${ar(a1)}٪ بعد ${ar(a0)}٪)`);
+    }
+    const weakest = Adaptive.weakest(2).map(w => (PACKS[w.pack] || {}).name).filter(Boolean);
+    if(weakest.length) need.push('محتاج تدريب في: ' + weakest.join(' و'));
+    if(now.days < 4) need.push('اللعب كان ' + ar(now.days) + ' أيام بس — المواظبة أهم من الوقت الطويل');
+
+    return `
+      <h3 style="margin:18px 0 6px">📅 تقرير الأسبوع</h3>
+      <div class="wkcard">
+        <div class="wkbars">
+          ${days.map(d => `
+            <div class="wkcol" title="${ar(d.stars)} نجمة">
+              <i style="height:${Math.round(d.stars / peak * 100)}%"></i>
+              <span class="wkv">${d.stars ? ar(d.stars) : ''}</span>
+              <span class="wkd">${DAY_AR[d.d.getDay()]}</span>
+            </div>`).join('')}
+        </div>
+        <div class="wkrow">
+          <span>⭐ ${ar(now.stars)} نجمة</span>
+          <span>🎮 ${ar(now.games)} لعبة</span>
+          <span>⏱️ ${fmtTime(now.ms)}</span>
+          <span>📆 ${ar(now.days)} أيام نشاط</span>
+          ${a1 !== null ? `<span>🎯 دقة ${ar(a1)}٪</span>` : ''}
+        </div>
+        <div class="wknote up">✅ اتحسّن: ${up.length ? up.join(' • ') : 'الأسبوع ماشي زي اللي قبله — تمام'}</div>
+        <div class="wknote need">💡 محتاج: ${need.length ? need.join(' • ') : 'مفيش حاجة واضحة — كمّلوا كده'}</div>
+
+        <div class="wkset">
+          <div class="wkctl">
+            <span>🎯 هدف اليوم</span>
+            <button class="btn ghost" data-goal="-5">−</button>
+            <b>${ar(Progress.goal())} ⭐</b>
+            <button class="btn ghost" data-goal="5">+</button>
+          </div>
+          <div class="wkctl">
+            <span>⏱️ حد وقت اللعب</span>
+            <button class="btn ghost" data-lim="-5">−</button>
+            <b>${Progress.limitMin() ? ar(Progress.limitMin()) + ' دقيقة' : 'مفيش'}</b>
+            <button class="btn ghost" data-lim="5">+</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* أزرار ضبط الهدف والحد */
+  function bindWeek(){
+    const s = Progress.get().settings;
+    document.querySelectorAll('[data-goal]').forEach(b => b.onclick = () => {
+      s.goal = Math.max(5, Math.min(100, (s.goal || 20) + (+b.dataset.goal)));
+      Progress.save(); dashboard();
+    });
+    document.querySelectorAll('[data-lim]').forEach(b => b.onclick = () => {
+      s.limitMin = Math.max(0, Math.min(180, (s.limitMin || 0) + (+b.dataset.lim)));
+      Progress.save(); dashboard();
+    });
+  }
 
   function dashboard(){
     const p = Progress.get();
@@ -127,6 +233,8 @@ const Shell = (() => {
           </div>
         </div>
 
+        <div class="rankwrap">${Rewards.rankBar()}</div>
+
         <div class="stats">
           <div class="stat"><b>${ar(p.stars)}</b><span>نجمة</span></div>
           <div class="stat"><b>${ar(p.games || 0)}</b><span>لعبة</span></div>
@@ -136,6 +244,8 @@ const Shell = (() => {
           <div class="stat"><b style="font-size:18px">${fmtTime(p.timeMs)}</b><span>وقت التعلّم</span></div>
           <div class="stat"><b id="visitCount">${Visits.get() ? ar(Visits.get()) : '…'}</b><span>زيارة للموقع</span></div>
         </div>
+
+        ${weekCard()}
 
         <h3 style="margin:18px 0 6px">🗺️ العوالم</h3>
         <table class="dtable"><thead><tr><th>العالم</th><th>النجوم</th><th>الإنجاز</th></tr></thead><tbody>${worldRows}</tbody></table>
@@ -174,6 +284,7 @@ const Shell = (() => {
       }).catch(() => { visitEl.textContent = '—'; });
     }
 
+    bindWeek();
     ParentGuide.bindDash(dashboard);
     document.getElementById('dPG').onclick = () => ParentGuide.home();
     document.getElementById('dBack').onclick = home;

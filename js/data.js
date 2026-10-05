@@ -23,15 +23,17 @@ const LEVELS = {
   4:{max:20, sumMax:20, steps:[1,1,1,2], choices:4}
 };
 
-const PALETTE = ['#FF6B6B','#7A5CFF','#2FC9B4','#FF9F1C','#4CB8FF','#1FAE9B','#E05FA8','#5FBF5F','#FFC43D','#6C7BFF','#FF7A59'];
+const PALETTE = ['#FF6B6B','#7A5CFF','#2FC9B4','#FF9F1C','#4CB8FF','#1FAE9B','#E05FA8','#5FBF5F','#FFC43D','#6C7BFF','#FF7A59','#1FA9D6','#C06BE8'];
 
 const STAGES = [
   {id:'counting',       icon:'🔢', name:'العد',            base:1},
   {id:'chooseNumber',   icon:'🎯', name:'اختر الرقم',      base:1},
   {id:'nextNumber',     icon:'➡️', name:'العدد التالي',    base:1},
   {id:'previousNumber', icon:'⬅️', name:'العدد السابق',    base:1},
+  {id:'neighbors',      icon:'↔️', name:'السابق والتالي',  base:2},
   {id:'sequence',       icon:'🔗', name:'أكمل التسلسل',    base:2},
   {id:'completeTable',  icon:'🧮', name:'أكمل الجدول',     base:2},
+  {id:'emptyTable',     icon:'🗒️', name:'الجدول الفاضي',   base:2, count:3},
   {id:'ascending',      icon:'📈', name:'ترتيب تصاعدي',    base:2},
   {id:'descending',     icon:'📉', name:'ترتيب تنازلي',    base:3},
   {id:'comparison',     icon:'⚖️', name:'أكبر وأصغر',      base:2},

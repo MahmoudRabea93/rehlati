@@ -38,7 +38,7 @@ const QuranSource = (() => {
     const s = src();
     const all = s.parseChapters(await grab(s.chaptersUrl));
     const list = all.filter(c => c.number >= CFG.range.from && c.number <= CFG.range.to)
-                    .sort((a,b)=> a.number - b.number);
+                    .sort((a,b)=> CFG.order === 'desc' ? b.number - a.number : a.number - b.number);
     if(!list.length) throw new Error('المصدر رجّع قائمة فاضية');
     cache.chapters = list; save();
     return list;
@@ -162,6 +162,7 @@ const QuranWorld = (() => {
   /* ========== شاشة السور ========== */
   async function open(){
     stopAudio();
+    if(window.Music) Music.quiet(true);      /* سكوت تام جوه عالم القرآن */
     UI.bar({back:'shell', title:'📖 القرآن'});
     loading('لحظة واحدة…');
     try{
@@ -174,15 +175,20 @@ const QuranWorld = (() => {
       <div class="qwrap">
         <section class="hero">
           <div class="banner quran">📖 عالم القرآن</div>
-          <h2>جزء عمّ</h2>
+          <h2>${esc(QURAN_CONFIG.rangeTitle || '')}</h2>
           <p>اختار سورة وابدأ الرحلة</p>
         </section>
         <div class="qpath">
           <div class="qstart">🕌 البداية</div>
-          ${list.map(c => {
+          ${(()=>{ let lastJuz = null; return list.map(c => {
             const st = QuranProgress.surahStars(c.number);
+            /* عنوان الجزء بيظهر مرة واحدة قبل أول سورة فيه */
+            const jz = QURAN_CONFIG.juzOf ? QURAN_CONFIG.juzOf(c.number) : null;
+            const head = (jz && jz !== lastJuz) ? `<div class="qjuz">${esc(jz)}</div><div class="qlink"></div>` : '';
+            lastJuz = jz;
             return `
             <div class="qlink"></div>
+            ${head}
             <button class="qstop ${st ? 'done' : ''} ${st === 4 ? 'full' : ''}" data-n="${c.number}">
               <span class="qnum">${ar(c.number)}</span>
               <span class="qmeta">
@@ -194,7 +200,7 @@ const QuranWorld = (() => {
                   `<i class="${QuranProgress.done(c.number,m) ? 'on' : ''}">${ic}</i>`).join('')}
               </span>
             </button>`;
-          }).join('')}
+          }).join(''); })()}
           <div class="qlink"></div>
           <div class="qend">🌟 تمّت الرحلة</div>
         </div>
@@ -482,3 +488,6 @@ const QuranWorld = (() => {
 
   return {open, back:()=>surahScreen(cur.number), stop:stopAudio};
 })();
+
+/* نفس السبب: window.QuranWorld كانت دايمًا undefined فالقرآن ما كانش بيقف عند الرجوع للرئيسية */
+window.QuranWorld = QuranWorld;

@@ -137,6 +137,37 @@
 /* ============================================================
    العوالم الجديدة: خريطة الرحلة، الحروف، الإنجازات
    ============================================================ */
+/* ---------- نظام الكروت في الصفحة الرئيسية ---------- */
+.wgrid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:clamp(10px,2.5vw,16px);max-width:720px;margin:18px auto 0;
+}
+/* الكارت أفقي ومضغوط: أيقونة جنب النص — مش عمود طويل */
+.world.card{
+  flex-direction:row;align-items:center;gap:12px;
+  padding:13px 14px;border-radius:24px;border-inline-end:8px solid var(--c);
+  box-shadow:0 6px 0 var(--shadow);
+}
+.world.card .wi{order:1;width:54px;height:54px;flex:0 0 auto;font-size:27px;border-radius:17px}
+.world.card .wmeta{order:2;flex:1;min-width:0}
+.world.card .wn{font-size:clamp(17px,4vw,21px);line-height:1.2}
+.world.card .wd{
+  font-size:clamp(11.5px,2.9vw,13.5px);line-height:1.4;margin-top:2px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.world.card .wbar{height:7px;margin-top:7px}
+.world.card .wtop{display:contents}            /* الأيقونة والنجوم بيتوزّعوا جوه الكارت الأفقي */
+.world.card .wstars{
+  order:3;background:#FFF3CF;color:#7A5200;border-radius:999px;
+  padding:5px 9px;font-size:13px;align-self:flex-start;
+}
+.world.card .wpct{display:none}                /* النسبة بقت على الشريط نفسه، مش محتاجة سطر */
+
+@media (max-width:430px){
+  .wgrid{grid-template-columns:1fr;max-width:420px}
+  .world.card .wd{-webkit-line-clamp:1}
+}
+
 .journey{display:flex;flex-direction:column;align-items:stretch;gap:0;max-width:560px;margin:20px auto 0}
 .jnode{
   align-self:center;background:var(--gold);color:#4A2B00;font-weight:800;
@@ -624,3 +655,89 @@
 
 /* التلال */
 .hills{bottom:0;inset-inline:0;width:100%;height:clamp(90px,22vh,170px)}
+
+/* عنوان فاصل بين أجزاء القرآن في قائمة السور */
+.qjuz{
+  align-self:center;background:var(--mint,#2FC9B4);color:#fff;font-weight:800;
+  padding:8px 22px;border-radius:999px;box-shadow:0 5px 0 rgba(0,0,0,.18);
+  font-size:clamp(15px,4vw,19px);
+}
+
+/* ---------- الهدف اليومي وسلسلة الأيام (الصفحة الرئيسية) ---------- */
+.daily{
+  display:flex;align-items:stretch;gap:12px;max-width:720px;margin:16px auto 0;
+  background:var(--paper);border-radius:24px;padding:12px 14px;box-shadow:0 6px 0 var(--shadow);
+}
+.dstreak{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-width:86px;padding:6px 10px;border-radius:20px;background:var(--paper-2);
+}
+.dstreak.hot{background:#FFE8D6}
+.dstreak .dfire{font-size:26px;line-height:1}
+.dstreak b{font-size:26px;line-height:1.1}
+.dstreak .dlab{font-size:11.5px;font-weight:800;color:var(--ink-soft)}
+.dgoal{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:5px}
+.dgtop{display:flex;justify-content:space-between;align-items:baseline;font-weight:800;font-size:14.5px}
+.dbar{height:14px;border-radius:999px;background:var(--line);overflow:hidden}
+.dbar i{display:block;height:100%;border-radius:999px;background:var(--gold);transition:width .5s}
+.dbar i.done{background:var(--mint)}
+.dnote{font-size:12.5px;font-weight:700;color:var(--ink-soft)}
+@media (max-width:430px){ .daily{max-width:420px} }
+
+/* ---------- تقرير الأسبوع (لوحة ولي الأمر) ---------- */
+.wkcard{background:var(--paper-2);border-radius:22px;padding:12px 14px}
+.wkbars{display:flex;align-items:flex-end;gap:6px;height:120px;margin-bottom:8px}
+.wkcol{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.wkcol i{display:block;width:100%;min-height:4px;border-radius:8px 8px 0 0;background:var(--grape);opacity:.85}
+.wkv{font-size:11px;font-weight:800;color:var(--ink-soft);margin-top:2px}
+.wkd{font-size:11px;font-weight:800;color:var(--ink-soft)}
+.wkrow{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:14px;font-weight:800;margin:6px 0}
+.wknote{font-size:14px;font-weight:700;line-height:1.7;margin-top:6px;border-radius:16px;padding:8px 12px}
+.wknote.up{background:#E4F7E8;color:#1B6B2F}
+.wknote.need{background:#FFF1D6;color:#7A5200}
+.wkset{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.wkctl{
+  display:flex;align-items:center;gap:8px;flex:1 1 230px;
+  background:#fff;border-radius:18px;padding:7px 10px;font-size:14px;font-weight:800;
+}
+.wkctl span{flex:1;color:var(--ink-soft)}
+.wkctl .btn{margin:0;padding:4px 14px;font-size:20px;line-height:1.2;min-width:44px}
+
+/* ---------- مراحل التقدّم والكؤوس ---------- */
+.rankwrap{max-width:720px;margin:12px auto 0}
+@media (max-width:430px){ .rankwrap{max-width:420px} }
+.rankbar{
+  display:flex;align-items:center;gap:12px;
+  background:var(--paper);border-radius:24px;padding:11px 14px;
+  box-shadow:0 6px 0 var(--shadow);border-inline-end:8px solid var(--rc,var(--gold));
+}
+.rankbar .rkcup{
+  font-size:34px;line-height:1;width:58px;height:58px;flex:0 0 auto;border-radius:18px;
+  display:grid;place-items:center;background:color-mix(in srgb, var(--rc,#E0A400) 16%, #fff);
+}
+.rankbar .rkmeta{flex:1;min-width:0}
+.rankbar .rkname{display:block;font-size:clamp(16px,4.2vw,20px);font-weight:800;color:var(--rc,var(--ink))}
+.rankbar .rkbar{display:block;height:11px;border-radius:999px;background:var(--line);overflow:hidden;margin:6px 0 4px}
+.rankbar .rkbar i{display:block;height:100%;border-radius:999px;background:var(--rc,var(--gold));transition:width .5s}
+.rankbar .rknote{display:block;font-size:12.5px;font-weight:700;color:var(--ink-soft)}
+
+.cups{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px;margin-top:10px}
+.cup{
+  text-align:center;padding:10px 6px;border-radius:20px;background:var(--paper-2);
+  border:3px solid var(--line);opacity:.55;
+}
+.cup.got{opacity:1;border-color:var(--rc);background:color-mix(in srgb, var(--rc) 12%, #fff)}
+.cup .ci{display:block;font-size:30px;line-height:1.2}
+.cup .cn{display:block;font-size:12.5px;font-weight:800;margin-top:3px;line-height:1.35}
+.cup .cs{display:block;font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-top:2px}
+
+.rank-toast{
+  position:fixed;inset-inline:16px;top:16px;z-index:60;margin:0 auto;max-width:360px;
+  display:flex;align-items:center;gap:12px;background:#fff;border-radius:22px;
+  padding:12px 16px;box-shadow:0 10px 24px rgba(0,0,0,.25);
+  border-inline-start:9px solid var(--rc,var(--gold));font-weight:800;
+  animation:dropin .45s ease;
+}
+.rank-toast .bi{font-size:38px;line-height:1}
+.rank-toast.out{animation:fadeup .5s ease forwards}
+@keyframes dropin{from{transform:translateY(-24px);opacity:0}to{transform:none;opacity:1}}
