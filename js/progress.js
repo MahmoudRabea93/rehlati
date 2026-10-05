@@ -25,7 +25,12 @@ const Progress = (() => {
   return {
     load, save,
     get:()=>state,
-    isUnlocked(id){ return state.settings.dev || state.unlocked.includes(id); },
+    isUnlocked(id){
+      if(state.settings.dev || state.unlocked.includes(id)) return true;
+      /* مرحلة ليها after بتتفتح أول ما المرحلة دي تتنجح (٨٠٪+) — بتشتغل للتقدّم القديم كمان */
+      const pk = PACKS[id];
+      return !!(pk && pk.after && (state.best[pk.after] || 0) >= 2);
+    },
     unlockNext(id){
       const pack = PACKS[id]; if(!pack) return null;
       const order = WORLD_STAGES[pack.world] || [];

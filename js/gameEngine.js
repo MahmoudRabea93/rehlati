@@ -9,9 +9,11 @@ const Engine = (() => {
   const valueClip = v => typeof v === 'number' ? nk(v) : SIGN_CLIP[v];
   const packOf = () => stage;
   /* إجابة صح من أول محاولة: نجمة محسوبة على عالم المرحلة + إحصائية فورية */
-  function award(){ Progress.addStar(1, stage.world); Progress.addAnswer(true); UI.bumpStars(); }
+  function award(){ Progress.addStar(1, stage.world); Progress.addAnswer(true); UI.bumpStars(); hook(true); }
   /* أول غلطة في السؤال بس — عشان السؤال الواحد ما يتحسبش غلط أكتر من مرة */
-  function penalize(){ Progress.addAnswer(false); }
+  function penalize(){ Progress.addAnswer(false); hook(false); }
+  /* مراحل ليها إحصائيات خاصة (زي المدود) بتسجّل نتيجة كل سؤال مرة واحدة */
+  function hook(ok){ if(stage && stage.onAnswer){ try{ stage.onAnswer(current(), ok); }catch(e){} } }
 
   function start(stageId, opts={}){
     stage    = PACKS[stageId];
@@ -61,9 +63,12 @@ const Engine = (() => {
       streak = tries===0 ? streak + 1 : 0;
       if(tries===0){ Adaptive.hit(stage.id, q.skill); award(); }
       UI.correct(btn, tries===0, streak);
+      if(q.okMsg) UI.setBubble(q.okMsg, 'ok');
+      if(q.reveal) q.reveal();
       streak >= 3 && tries===0 ? Audio_.combo(streak) : Audio_.good();
       const pr = sample(PRAISE_SAY);
       if(q.lang === 'en') Audio_.speakEn([String(value), 'Very good!']);
+      else if(q.sayRight) Audio_.speak([q.sayRight, pr[0]]);
       else Audio_.speak([said, pr[0]], [valueClip(value), pr[1]]);
       setTimeout(next, 1400);
     }else{
@@ -90,8 +95,10 @@ const Engine = (() => {
         streak = tries===0 ? streak + 1 : 0;
         if(tries===0){ Adaptive.hit(stage.id, q.skill); award(); }
         UI.correct(null, tries===0, streak);
+        if(q.okMsg) UI.setBubble(q.okMsg, 'ok');
         const pr = sample(PRAISE_SAY);
-        Audio_.speak([arNum(value), pr[0]], [nk(value), pr[1]]);
+        if(q.sayRight) Audio_.speak([q.sayRight, pr[0]]);
+        else Audio_.speak([arNum(value), pr[0]], [nk(value), pr[1]]);
         setTimeout(next, 1400);
       }else{
         Audio_.speak(arNum(value), [nk(value)]);
@@ -212,6 +219,47 @@ const Engine = (() => {
     }
   }
 
+  /* اقرأ المقطع: مفيش إجابة غلط — الطفل يسمع ويقرأ ويؤكد */
+  function readDone(btn){
+    const q = current();
+    Adaptive.hit(stage.id, q.skill);
+    const pr = sample(PRAISE_SAY);
+    Audio_.speak(pr[0], [pr[1]]);
+    solved(q);
+  }
+
+  /* صنّف: اختار بطاقة ثم الصندوق (أو اسحبها). غلطة = تلميح لطيف، مش عقاب */
+  function sortSelect(i, btn){
+    const q = current();
+    if(btn.disabled) return;
+    if(sel && sel.btn) sel.btn.classList.remove('sel');
+    sel = {i, btn};
+    btn.classList.add('sel');
+    Audio_.speak(q.cards[i].say);
+  }
+  function sortPlace(type, box){
+    const q = current();
+    if(!sel){ UI.setBubble('اختر مقطعًا أولًا 👆'); return; }
+    const card = q.cards[sel.i], sk = 'madd:' + card.type;
+    if(card.type === type){
+      UI.sortPlace(sel.btn, box);
+      matched.push(sel.i); sel = null;
+      Adaptive.hit(stage.id, sk);
+      Audio_.good(); Audio_.speak(card.say);
+      UI.setBubble(`${ar(matched.length)} / ${ar(q.cards.length)} ✅`, 'ok');
+      if(matched.length === q.cards.length) solved(q);
+    }else{
+      tries++; streak = 0;
+      if(!mistakes.includes(q.type)) mistakes.push(q.type);
+      if(tries === 1) penalize();
+      Adaptive.miss(stage.id, sk);
+      UI.wrong(box, q, tries);
+      Audio_.bad();
+      if(sel.btn) sel.btn.classList.remove('sel');
+      sel = null;
+    }
+  }
+
   function next(){
     /* الوقت بيتحسب سؤال بسؤال — لو الطفل ساب الجولة، اللي ذاكره يتسجّل */
     Progress.addTime(Date.now() - t0);
@@ -225,8 +273,10 @@ const Engine = (() => {
     const total = list.length;
     let unlocked = null;
     if(!practice){
+      const before = Progress.get().best[stage.id] || 0;
       Progress.addResult(stage.id, correct, total);
       if(correct/total >= .8) unlocked = Progress.unlockNext(stage.id);
+      if(stage.onFinish) stage.onFinish({correct, total, first: before < 2});
     }
     Progress.save();
     if(window.Rewards) Rewards.check();
@@ -234,6 +284,6 @@ const Engine = (() => {
     UI.resultScreen({stage, correct, total, mistakes, unlocked, practice});
   }
 
-  return {start, answer, pick, pairPick, findPick, memoryPick, state, repeat, pack:packOf, replay:()=>start(stage.id),
+  return {start, answer, pick, pairPick, findPick, memoryPick, readDone, sortSelect, sortPlace, state, repeat, pack:packOf, replay:()=>start(stage.id),
           trainMistakes:()=>start(stage.id,{practice:true, types:mistakes.slice()})};
 })();

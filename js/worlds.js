@@ -19,6 +19,13 @@ function registerStages(world, stages){
   stages.forEach((s,i) => { PACKS[s.id] = Object.assign({world, n:i+1}, s); });
 }
 
+/* إضافة مراحل لعالم موجود من غير ما نلمس مراحله الأصلية (مثال: المدود جوه العربي).
+   المراحل المضافة بتتحط في آخر ترتيب العالم، وممكن تُفتح بدري عن طريق after */
+function appendStages(world, stages){
+  const list = WORLD_STAGES[world] = WORLD_STAGES[world] || [];
+  stages.forEach(s => { list.push(s.id); PACKS[s.id] = Object.assign({world, n:list.length}, s); });
+}
+
 /* مراحل الحساب الموجودة أصلاً تدخل نفس السجل بدون تغيير منطقها */
 registerStages('math', STAGES.map(s => ({...s, gen:(lv,o) => Generators[s.id](lv,o)})));
 

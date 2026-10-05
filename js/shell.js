@@ -5,7 +5,7 @@
 const WORLDS = [
   {id:'quran',   desc:'استماع وترديد وحفظ ومراجعة',  ready:true},
   {id:'math',    desc:'الأرقام والجمع والطرح',       ready:true},
-  {id:'arabic',  desc:'الحروف والكلمات والقراءة',     ready:true},
+  {id:'arabic',  desc:'الحروف والمدود والكلمات والقراءة',     ready:true},
   {id:'english', desc:'Letters, words and sounds',   ready:true}
 ].map(w => ({...w, ...WORLDS_META[w.id]}));
 
@@ -139,6 +139,8 @@ const Shell = (() => {
 
         <h3 style="margin:18px 0 6px">🗺️ العوالم</h3>
         <table class="dtable"><thead><tr><th>العالم</th><th>النجوم</th><th>الإنجاز</th></tr></thead><tbody>${worldRows}</tbody></table>
+
+        ${typeof Madd !== 'undefined' ? Madd.dashCard() : ''}
 
         ${ParentGuide.dashCard()}
 

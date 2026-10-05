@@ -39,10 +39,14 @@ const UI = (() => {
     const meta = WORLDS_META[world];
     bar({back:'shell', title:`المستوى ${ar(Progress.level(world))}`});
     const p = Progress.get();
+    let lastGroup = null;
     const cards = (WORLD_STAGES[world]||[]).map(id => PACKS[id]).map(s=>{
       const open = Progress.isUnlocked(s.id);
       const medals = p.best[s.id] || 0;
-      return `<button class="stage ${open?'':'locked'}" data-id="${s.id}" style="--c:${s.color}"
+      /* عنوان مجموعة (زي المدود) بيظهر مرة قبل أول مرحلة فيها */
+      const head = (s.group && s.group !== lastGroup) ? `<div class="mgroup">${s.groupName}</div>` : '';
+      if(s.group) lastGroup = s.group;
+      return head + `<button class="stage ${open?'':'locked'}" data-id="${s.id}" style="--c:${s.color}"
                 ${open?'':'aria-disabled="true"'}>
         <span class="badge">${s.icon}</span>
         <span class="meta">
@@ -73,7 +77,8 @@ const UI = (() => {
           return;
         }
         const pack = PACKS[id];
-        if(pack.learn) LetterBoard.open(pack); else Engine.start(id);
+        if(pack.open) pack.open(pack);
+        else if(pack.learn) LetterBoard.open(pack); else Engine.start(id);
       };
     });
   }
@@ -120,7 +125,7 @@ const UI = (() => {
         </div>
         <div class="order-hint">${q.orderHint || 'اضغط الأرقام بالترتيب'}</div>
         <div class="choices">
-          ${q.items.map(n=>`<button class="choice ${q.numeric===false?'txt':''}" data-v="${n}" style="--c:${st.stage.color}">${ar(n)}</button>`).join('')}
+          ${q.items.map(n=>`<button class="choice ${q.numeric===false?'txt':''} ${q.bigChoices?'mbig':''}" data-v="${n}" style="--c:${st.stage.color}">${ar(n)}</button>`).join('')}
         </div>`;
     }else if(q.mode === 'find'){
       body = `
@@ -149,6 +154,23 @@ const UI = (() => {
             ${q.right.map(v=>`<button class="choice pair txt ltr" data-v="${v}" data-side="b" style="--c:#8FB9E8">${v}</button>`).join('')}
           </div>
         </div>`;
+    }else if(q.mode === 'read'){
+      body = `
+        <div class="ask-row"><h2 class="ask">${q.ask}</h2>${sayBtn()}</div>
+        ${q.visual}
+        <div class="order-hint">${q.hint}</div>
+        <div class="center"><button class="btn go mbtn" id="btnReadYes">${q.yes}</button></div>`;
+    }else if(q.mode === 'sort'){
+      body = `
+        <div class="ask-row"><h2 class="ask">${q.ask}</h2>${sayBtn()}</div>
+        <div class="sortboxes">
+          ${q.boxes.map(b=>`<button class="sbox t-${b.key}" data-t="${b.key}" aria-label="${b.label}">
+            <span class="slabel">${b.label}</span><span class="sbody"></span></button>`).join('')}
+        </div>
+        <div class="order-hint">${q.orderHint}</div>
+        <div class="scards">
+          ${q.cards.map((c,i)=>`<button class="scard" draggable="true" data-i="${i}" aria-label="${c.text}">${c.text}</button>`).join('')}
+        </div>`;
     }else if(q.mode === 'grid'){
       body = `
         <div class="ask-row"><h2 class="ask">${q.ask}</h2>${sayBtn()}</div>
@@ -162,7 +184,7 @@ const UI = (() => {
         <div class="ask-row"><h2 class="ask">${q.ask}</h2>${sayBtn()}</div>
         ${q.visual||''}
         <div class="choices ${q.wide?'wide':''}">
-          ${q.choices.map(c=>`<button class="choice ${typeof c==='string'&&c.length>1?'txt':''} ${q.ltr?'ltr':''}" data-v="${c}" style="--c:${st.stage.color}">${ar(c)}</button>`).join('')}
+          ${q.choices.map(c=>`<button class="choice ${typeof c==='string'&&c.length>1?'txt':''} ${q.ltr?'ltr':''} ${q.bigChoices?'mbig':''}" data-v="${c}" style="--c:${st.stage.color}">${ar(c)}</button>`).join('')}
         </div>`;
     }
     wrap.innerHTML = `<div class="qcard" id="qcard">${body}</div>`;
@@ -180,6 +202,26 @@ const UI = (() => {
     wrap.querySelectorAll('.mcard').forEach(btn=>{
       btn.onclick = () => Engine.memoryPick(+btn.dataset.m, btn);
     });
+    /* أي عنصر فيه data-say بيسمّع النص ده (زرار 🔊 جوه السؤال) */
+    wrap.querySelectorAll('[data-say]').forEach(b=>{
+      b.onclick = () => { Audio_.unlock(); Audio_.speak(b.dataset.say); };
+    });
+    const ry = document.getElementById('btnReadYes');
+    if(ry) ry.onclick = () => { ry.disabled = true; Engine.readDone(ry); };
+    /* صنّف: بالضغط (موبايل/كيبورد) أو بالسحب (ديسكتوب) */
+    wrap.querySelectorAll('.scard').forEach(b=>{
+      b.onclick = () => Engine.sortSelect(+b.dataset.i, b);
+      b.ondragstart = e => {
+        try{ e.dataTransfer.setData('text/plain', b.dataset.i); e.dataTransfer.effectAllowed = 'move'; }catch(_){}
+        Engine.sortSelect(+b.dataset.i, b);
+      };
+    });
+    wrap.querySelectorAll('.sbox').forEach(b=>{
+      b.onclick = () => Engine.sortPlace(b.dataset.t, b);
+      b.ondragover  = e => { e.preventDefault(); b.classList.add('over'); };
+      b.ondragleave = () => b.classList.remove('over');
+      b.ondrop      = e => { e.preventDefault(); b.classList.remove('over'); Engine.sortPlace(b.dataset.t, b); };
+    });
 
     wrap.querySelectorAll('.choice').forEach(btn=>{
       btn.onclick = () => {
@@ -193,6 +235,13 @@ const UI = (() => {
         else Engine.answer(val, btn);
       };
     });
+  }
+
+  /* صنّف: البطاقة الصح تنتقل جوه الصندوق وتتقفل */
+  function sortPlace(card, box){
+    card.classList.remove('sel'); card.classList.add('placed'); card.disabled = true; card.draggable = false;
+    const body = box.querySelector('.sbody'); if(body) body.appendChild(card);
+    burst(box, 4, '✨');
   }
 
   /* تحديث عدّاد النجوم فورًا مع كل إجابة صح */
@@ -247,7 +296,7 @@ const UI = (() => {
   }
 
   function wrong(btn, q, tries){
-    flash('no');
+    if(!q.gentle) flash('no');
     if(btn){
       btn.classList.add('wrong');
       setTimeout(()=>btn.classList.remove('wrong'), 420);
@@ -257,7 +306,7 @@ const UI = (() => {
     const lion = document.getElementById('lion');
     if(lion){ lion.classList.remove('cheer'); void lion.offsetWidth; lion.classList.add('sad'); }
     setBubble(`${sample(RETRY)} — ${q.hint}`, 'no');
-    popMsg(sample(['😔','🙁','💭']), false, 'sadmsg');
+    popMsg(q.gentle ? '💪' : sample(['😔','🙁','💭']), false, q.gentle ? '' : 'sadmsg');
     if(tries >= 2) hintCorrect(q);
   }
 
@@ -308,7 +357,7 @@ const UI = (() => {
     const g = id => document.getElementById(id);
     if(g('btnTrain')) g('btnTrain').onclick = () => Engine.trainMistakes();
     g('btnAgain').onclick = () => Engine.replay();
-    if(g('btnNext'))  g('btnNext').onclick  = () => Engine.start(unlocked.id);
+    if(g('btnNext'))  g('btnNext').onclick  = () => unlocked.open ? unlocked.open(unlocked) : Engine.start(unlocked.id);
     g('btnHome').onclick = () => worldMap(stage.world);
   }
 
@@ -438,7 +487,7 @@ const UI = (() => {
     sheet.onclick = e => { if(e.target === sheet) closeSheet(); };
   }
 
-  return {mathMap, worldMap, bar, bumpStars, confetti, popMsg, gameScreen, renderQuestion, renderDots, correct, wrong, fillSlot, markNext,
+  return {mathMap, worldMap, bar, bumpStars, sortPlace, confetti, popMsg, gameScreen, renderQuestion, renderDots, correct, wrong, fillSlot, markNext,
           resultScreen, bindSettings, setBubble};
 })();
 
