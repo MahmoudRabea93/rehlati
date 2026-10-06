@@ -198,3 +198,133 @@
 .ncell{display:flex;flex-direction:column;align-items:center;gap:5px}
 .ncap{font-size:clamp(12px,3.2vw,15px);font-weight:800;color:var(--ink-soft)}
 .num-tile.mid{border-color:var(--grape);background:#fff}
+
+/* ---------- لعبة البالونات ---------- */
+.bsky{
+  position:relative;height:clamp(230px,38vh,310px);margin:10px 0 6px;overflow:hidden;
+  border-radius:26px;background:linear-gradient(#CDEBFF,#EAF7FF 70%,#DFF3DD);
+}
+.balloon{
+  position:absolute;left:var(--l);bottom:-110px;width:clamp(56px,15vw,76px);
+  pointer-events:auto;z-index:1;
+  background:none;border:0;padding:0;cursor:pointer;
+  animation:floatUp var(--dur) linear var(--delay) infinite,
+            bsway var(--sway) ease-in-out var(--delay) infinite alternate;
+}
+.balloon .bv{
+  display:grid;place-items:center;width:100%;aspect-ratio:.82;
+  border-radius:50% 50% 48% 48%;background:var(--bc);
+  color:#fff;font-weight:900;font-size:clamp(24px,6.5vw,33px);
+  box-shadow:inset -8px -10px 0 rgba(0,0,0,.12), 0 5px 10px rgba(0,0,0,.14);
+  text-shadow:0 2px 3px rgba(0,0,0,.2);
+}
+.balloon .bstr{display:block;width:2px;height:26px;margin:0 auto;background:rgba(0,0,0,.25)}
+.balloon.ok{animation:popOut .4s ease forwards}
+.balloon.wrong .bv{animation:shake .4s}
+/* بنحرّك bottom نفسه عشان المسار يتظبط مع أي ارتفاع للسما */
+@keyframes floatUp{ from{bottom:-110px} to{bottom:100%} }
+@keyframes bsway{ from{margin-inline-start:-14px} to{margin-inline-start:14px} }
+@keyframes popOut{ 40%{transform:scale(1.35);opacity:1} 100%{transform:scale(.1);opacity:0} }
+/* احترام تفضيل تقليل الحركة */
+@media (prefers-reduced-motion:reduce){
+  .balloon{animation:none;bottom:auto;top:auto}
+  .bsky{height:auto;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:14px}
+  .balloon{position:static;left:auto}
+}
+
+/* ---------- اسمع واختار ---------- */
+.listenbox{text-align:center;margin:10px 0 4px}
+.earbtn{
+  width:clamp(92px,26vw,126px);aspect-ratio:1;border-radius:50%;border:0;
+  background:var(--sky-deep,#4C9BFF);color:#fff;font-size:clamp(44px,12vw,58px);
+  box-shadow:0 8px 0 rgba(0,0,0,.2);animation:pulse 2s ease-in-out infinite;
+}
+.earbtn:active{transform:translateY(5px);box-shadow:0 3px 0 rgba(0,0,0,.2)}
+@keyframes pulse{50%{transform:scale(1.06)}}
+
+/* ---------- سباق الأرقام ---------- */
+.track{margin:8px 0 10px}
+.track .lane{
+  position:relative;height:46px;margin-bottom:8px;border-radius:999px;
+  background:repeating-linear-gradient(90deg,#EFE6D6 0 18px,#E6DCCA 18px 36px);
+}
+.track .runner{position:absolute;top:50%;transform:translate(50%,-50%);font-size:30px;transition:inset-inline-start .6s ease}
+.track .flag{position:absolute;inset-inline-end:4px;top:50%;transform:translateY(-50%);font-size:24px}
+
+/* ---------- بازل الصورة ---------- */
+.puzzle{
+  display:grid;grid-template-columns:repeat(var(--pcols,3),1fr);
+  gap:5px;width:clamp(200px,54vw,264px);margin:12px auto 4px;direction:ltr;
+  background:var(--line);border-radius:18px;padding:5px;
+}
+.puzzle .pc{
+  position:relative;overflow:hidden;aspect-ratio:1;
+  background:#DDE3EA;border-radius:11px;
+}
+/* الجزء اللي يخص الخانة: الصورة كاملة بحجم الشبكة ومزحزحة */
+.puzzle .pc i{
+  position:absolute;width:calc(var(--pcols,3) * 100%);height:calc(var(--prows,2) * 100%);
+  display:grid;place-items:center;font-style:normal;
+  font-size:clamp(165px,46vw,222px);line-height:1;
+  opacity:0;transform:scale(.9);transition:opacity .35s ease, transform .35s ease;
+}
+.puzzle .pc.open{background:#fff}
+.puzzle .pc.open i{opacity:1;transform:none}
+
+/* ---------- لوّن بالأرقام ---------- */
+.paintgrid{
+  display:grid;grid-template-columns:repeat(var(--cols,6),1fr);gap:4px;
+  max-width:340px;margin:10px auto;background:var(--line);padding:4px;border-radius:16px;
+}
+.pcell{
+  aspect-ratio:1;border:0;border-radius:8px;background:#fff;color:var(--ink-soft);
+  font-size:clamp(13px,3.6vw,17px);font-weight:800;font-family:inherit;
+}
+.pcell.painted{color:transparent}
+.pots{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:10px}
+.pot{
+  width:clamp(54px,15vw,68px);aspect-ratio:1;border-radius:50%;border:4px solid #fff;
+  background:var(--pc);color:#fff;font-size:clamp(20px,5.5vw,26px);font-weight:900;font-family:inherit;
+  box-shadow:0 5px 0 rgba(0,0,0,.2);
+}
+.pot.sel{outline:5px solid var(--ink);outline-offset:3px;transform:translateY(-3px)}
+
+/* ---------- اتبع النمط ---------- */
+.patrow{display:flex;justify-content:center;align-items:center;gap:clamp(6px,2vw,12px);flex-wrap:wrap;margin:12px 0}
+.pat{
+  width:clamp(46px,13vw,64px);aspect-ratio:1;display:grid;place-items:center;
+  background:var(--paper-2);border-radius:18px;font-size:clamp(24px,7vw,34px);
+}
+.pat.q{background:#fff;border:4px dashed var(--grape);color:var(--grape);font-weight:900;animation:pulse 1.6s infinite}
+
+/* ---------- الأشكال والألوان ---------- */
+.shp{display:block;width:clamp(44px,12vw,62px);height:clamp(44px,12vw,62px);background:var(--sc)}
+.s-circle{border-radius:50%}
+.s-square{border-radius:10px}
+.s-triangle{background:none;width:0;height:0;border-inline:clamp(24px,6.5vw,33px) solid transparent;
+  border-bottom:clamp(44px,12vw,60px) solid var(--sc)}
+.s-star{clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.s-heart{clip-path:polygon(50% 100%,10% 60%,2% 36%,10% 16%,28% 10%,50% 26%,72% 10%,90% 16%,98% 36%,90% 60%)}
+
+/* ---------- رتّب بالحجم ---------- */
+.szpic{display:inline-block;line-height:1}
+
+/* ---------- كام الساعة ---------- */
+.clockwrap{display:flex;justify-content:center;margin:10px 0 4px}
+.clock{width:clamp(150px,44vw,210px);height:auto;filter:drop-shadow(0 6px 0 var(--shadow))}
+
+/* ---------- كرر الإيقاع ---------- */
+.beats{display:flex;justify-content:center;gap:10px;margin:14px 0 12px}
+.beats .beat{
+  display:block;width:16px;height:16px;border-radius:50%;background:var(--line);
+  transition:transform .2s, background .2s;
+}
+.beats .beat.on{background:var(--grass);transform:scale(1.3)}
+.pads{display:flex;justify-content:center;gap:clamp(10px,3vw,18px);margin:6px 0 12px}
+.pad{
+  width:clamp(78px,22vw,104px);aspect-ratio:1;border:0;border-radius:26px;
+  background:var(--pdc);font-size:clamp(34px,10vw,46px);font-family:inherit;
+  box-shadow:0 7px 0 rgba(0,0,0,.22);transition:transform .1s, box-shadow .1s, filter .15s;
+}
+.pad:active{transform:translateY(5px);box-shadow:0 2px 0 rgba(0,0,0,.22)}
+.pad.hit{filter:brightness(1.35);transform:translateY(5px) scale(1.06);box-shadow:0 2px 0 rgba(0,0,0,.22)}

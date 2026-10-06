@@ -276,12 +276,13 @@
 
 /* لعبة الأصحاب */
 .memgrid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));
-  gap:12px;direction:ltr;max-width:430px;margin:6px auto 0;
+  /* عدد أعمدة ثابت = عدد الأزواج، فالكروت بتنزل صفّين متساويين بالظبط */
+  display:grid;grid-template-columns:repeat(var(--mc,4),1fr);
+  gap:clamp(8px,2.4vw,13px);direction:ltr;max-width:430px;margin:8px auto 0;
 }
 .mcard{
   aspect-ratio:1;border-radius:20px;background:var(--grape);color:#fff;
-  font-size:clamp(26px,7vw,38px);font-weight:800;font-family:inherit;
+  font-size:clamp(26px,7vw,38px);font-weight:800;font-family:inherit;border:0;padding:0;
   box-shadow:0 6px 0 rgba(0,0,0,.25);display:grid;place-items:center;transition:transform .15s;
 }
 .mcard:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.25)}
@@ -441,7 +442,7 @@
 .cloud.k3{top:46%;transform:scale(1.15);opacity:.5;animation:drift 72s linear infinite 18s}
 @keyframes drift{from{right:-160px}to{right:112%}}
 
-.bird{position:absolute;width:clamp(26px,7vw,40px);animation:fly 26s linear infinite}
+.bird{position:absolute;width:clamp(26px,7vw,40px);animation:birdfly 26s linear infinite}
 .bird svg{width:100%;height:auto;overflow:visible}
 .bird .w{fill:none;stroke:#1B3557;stroke-width:2.6;stroke-linecap:round;
   transform-origin:20px 11px;animation:flap .5s ease-in-out infinite alternate}
@@ -454,7 +455,8 @@
 .bird.b3 .w{animation-duration:.58s}
 .bird.b4 .w{animation-duration:.46s}
 @keyframes flap{from{transform:scaleY(1)}to{transform:scaleY(.35)}}
-@keyframes fly{
+/* مسمّاة birdfly عشان ما تدهسش حركة الشرر fly في game.css */
+@keyframes birdfly{
   0%{right:-60px;margin-top:0}
   25%{margin-top:-22px}
   50%{margin-top:10px}
@@ -741,3 +743,13 @@
 .rank-toast .bi{font-size:38px;line-height:1}
 .rank-toast.out{animation:fadeup .5s ease forwards}
 @keyframes dropin{from{transform:translateY(-24px);opacity:0}to{transform:none;opacity:1}}
+
+/* وجه الكارت المقلوب: علامة استفهام هادية بدل الإيموجي */
+.qm{font-size:.86em;opacity:.95}
+/* الدواير في شبكة مرتّبة تتعدّ بسهولة */
+.dots{display:grid;gap:14%;width:72%;place-content:center}
+.dots i{display:block;width:clamp(9px,2.6vw,13px);aspect-ratio:1;border-radius:50%;background:currentColor}
+.dots.d1,.dots.d2,.dots.d3{grid-template-columns:repeat(3,auto)}
+.dots.d4{grid-template-columns:repeat(2,auto)}
+.dots.d5,.dots.d6{grid-template-columns:repeat(3,auto)}
+.mcard.flip .dots i{background:var(--grape)}

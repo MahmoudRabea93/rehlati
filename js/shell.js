@@ -6,7 +6,8 @@ const WORLDS = [
   {id:'quran',   desc:'استماع وترديد وحفظ ومراجعة',  ready:true},
   {id:'math',    desc:'الأرقام والجمع والطرح',       ready:true},
   {id:'arabic',  desc:'الحروف والمدود والكلمات والقراءة',     ready:true},
-  {id:'english', desc:'Letters, words and sounds',   ready:true}
+  {id:'english', desc:'Letters, words and sounds',   ready:true},
+  {id:'games',   desc:'بالونات وذاكرة وسباق وتلوين',  ready:true}
 ].map(w => ({...w, ...WORLDS_META[w.id]}));
 
 const Shell = (() => {
@@ -39,7 +40,7 @@ const Shell = (() => {
   function home(){
     Audio_.stop();
     if(window.QuranWorld) QuranWorld.stop();
-    if(window.Music) Music.quiet(false);     /* رجّعنا الموسيقى بعد الخروج من القرآن */
+    if(window.Music){ Music.quiet(false); Music.theme('home'); }   /* رجّعنا الموسيقى ومزاج الرئيسية */
     const p = Progress.get();
     UI.bar({title:`المستوى ${ar(Progress.level())}`});
     screen().innerHTML = `

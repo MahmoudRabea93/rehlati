@@ -163,6 +163,17 @@ const WORLD_SCENES = {
       <span class="floaty f2">${Art.balloon('b','#FF6B6B')}</span>
       <span class="floaty f3">${Art.balloon('C','#FFC43D')}</span>
       <span class="rider car">${Art.car()}</span>`
+  },
+  /* عالم الألعاب: سما مليانة بالونات ملوّنة */
+  games: {
+    sky:['#FFD9E2','#FFF4E6'], hills:['#4CC9A7','#7FE0C2'],
+    build: () => `
+      ${Art.sun()}
+      <span class="drift c1">${Art.cloud()}</span>
+      <span class="drift c3">${Art.cloud()}</span>
+      <span class="floaty f1">${Art.balloon('٧','#FF6B6B')}</span>
+      <span class="floaty f2">${Art.balloon('٣','#4CC9A7')}</span>
+      <span class="floaty f3">${Art.balloon('٥','#4C9BFF')}</span>`
   }
 };
 

@@ -39,6 +39,7 @@ const Engine = (() => {
       }
     }
     idx = 0; correct = 0; mistakes = []; picked = []; streak = 0;
+    if(window.Music) Music.theme(stage.id);     /* لكل لعبة موسيقاها */
     UI.gameScreen();
     render();
   }
@@ -50,6 +51,7 @@ const Engine = (() => {
     tries = 0; picked = []; sel = null; matched = []; mem = {first:null, found:0, lock:false};
     const q = current();
     UI.renderQuestion(q, state());
+    if(q.mode === 'rhythm') setTimeout(rhythmPlay, 1200);
     if(q.lang === 'en') Audio_.speakEn(q.speak);
     else Audio_.speak(idx===0 ? [`${stage.name}. يلا بينا!`, q.speak] : q.speak, q.clips);
   }
@@ -190,8 +192,12 @@ const Engine = (() => {
     if(mem.first && mem.first.i === i) return;
 
     btn.classList.add('flip');
-    btn.textContent = q.cards[i].ch;
-    Audio_.speakEn(q.cards[i].ch);
+    /* الكارت ممكن يكون رقم (نص) أو شكل (HTML زي الدواير) */
+    if(q.cards[i].html) btn.innerHTML = q.cards[i].html;
+    else btn.textContent = q.cards[i].ch;
+    /* الكارت ممكن يبقى عربي (رقم) أو إنجليزي (حرف) */
+    if(q.lang === 'ar') Audio_.speak(q.cards[i].say || q.cards[i].ch);
+    else Audio_.speakEn(q.cards[i].ch);
 
     if(!mem.first){ mem.first = {i, btn}; return; }
     const a = mem.first, b = {i, btn};
@@ -214,9 +220,85 @@ const Engine = (() => {
       UI.setBubble('مش أصحاب — جرّب تاني ❤️', 'no');
       mem.lock = true;
       setTimeout(() => {
-        [a,b].forEach(x => { x.btn.classList.remove('flip'); x.btn.textContent = '❓'; });
+        [a,b].forEach(x => { x.btn.classList.remove('flip'); x.btn.innerHTML = '<span class="qm">?</span>'; });
         mem.lock = false;
       }, 1000);
+    }
+  }
+
+  /* لوّن بالأرقام: اختار لون ثم الخانات اللي عليها رقمه */
+  function colorSelect(n, btn){
+    const wrap = btn.parentElement;
+    if(wrap) wrap.querySelectorAll('.pot').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    sel = {n};
+    Audio_.speak(`${btn.dataset.name} ، رقم ${arNum(n)}`);
+  }
+  function colorPaint(i, btn){
+    const q = current();
+    if(btn.disabled) return;
+    if(!sel){ UI.setBubble('اختار لون الأول 🎨'); Audio_.bad(); return; }
+    if(q.cells[i].n === sel.n){
+      btn.style.background = (q.palette.find(p => p.n === sel.n) || {}).color;
+      btn.classList.add('painted'); btn.disabled = true;
+      matched.push(i);
+      Audio_.good();
+      UI.setBubble(`${ar(matched.length)} / ${ar(q.cells.length)} 🎨`, 'ok');
+      if(matched.length === q.cells.length){
+        if(tries === 0) Adaptive.hit(stage.id, q.skill);
+        if(q.okMsg) UI.setBubble(q.okMsg, 'ok');
+        Audio_.speak(`طلعت صورة ${q.picName}`);
+        solved(q);
+      }
+    }else{
+      tries++;
+      if(!mistakes.includes(q.type)) mistakes.push(q.type);
+      if(tries === 1) penalize();
+      Adaptive.miss(stage.id, q.skill);
+      UI.wrong(btn, q, tries);
+      Audio_.bad();
+      Audio_.speak(['الخانة دي رقم ' + arNum(q.cells[i].n), 'دوّر على رقم ' + arNum(sel.n)]);
+    }
+  }
+
+  /* 🥁 كرر الإيقاع: شغّل السلسلة ثم استقبل ضغطات الطفل */
+  function rhythmPlay(){
+    const q = current();
+    mem.lock = true;
+    UI.setBubble('اسمع كويس… 👂');
+    q.seq.forEach((k, i) => setTimeout(() => {
+      Audio_.pad(k);
+      UI.flashPad(k);
+      if(i === q.seq.length - 1) setTimeout(() => {
+        mem.lock = false;
+        UI.setBubble('دورك! كرّر الإيقاع 🥁');
+      }, 500);
+    }, 400 + i * 700));
+  }
+  function rhythmTap(k, btn){
+    const q = current();
+    if(mem.lock) return;                      /* ممنوع الضغط والإيقاع بيشتغل */
+    Audio_.pad(k);
+    UI.flashPad(k);
+    if(k === q.seq[picked.length]){
+      picked.push(k);
+      UI.markBeat(picked.length - 1);
+      if(picked.length === q.seq.length){
+        if(tries === 0) Adaptive.hit(stage.id, q.skill);
+        if(q.okMsg) UI.setBubble(q.okMsg, 'ok');
+        solved(q);
+      }
+    }else{
+      tries++;
+      if(!mistakes.includes(q.type)) mistakes.push(q.type);
+      if(tries === 1) penalize();
+      Adaptive.miss(stage.id, q.skill);
+      UI.wrong(btn, q, tries);
+      Audio_.bad();
+      picked = [];
+      UI.resetBeats();
+      UI.setBubble('مش مظبوط — هنسمعه تاني ❤️', 'no');
+      setTimeout(rhythmPlay, 900);
     }
   }
 
@@ -285,6 +367,6 @@ const Engine = (() => {
     UI.resultScreen({stage, correct, total, mistakes, unlocked, practice});
   }
 
-  return {start, answer, pick, pairPick, findPick, memoryPick, readDone, sortSelect, sortPlace, state, repeat, pack:packOf, replay:()=>start(stage.id),
+  return {start, answer, pick, pairPick, findPick, memoryPick, readDone, sortSelect, sortPlace, colorSelect, colorPaint, rhythmTap, rhythmPlay, state, repeat, pack:packOf, replay:()=>start(stage.id),
           trainMistakes:()=>start(stage.id,{practice:true, types:mistakes.slice()})};
 })();

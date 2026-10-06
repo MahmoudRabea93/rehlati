@@ -37,6 +37,7 @@ const UI = (() => {
   /* خريطة أي عالم — نفس الكود للحساب والعربي و English */
   function worldMap(world){
     const meta = WORLDS_META[world];
+    if(window.Music) Music.theme(world);        /* لكل عالم مزاجه */
     bar({back:'shell', title:`المستوى ${ar(Progress.level(world))}`});
     const p = Progress.get();
     let lastGroup = null;
@@ -147,6 +148,34 @@ const UI = (() => {
       `<span class="dot ${i<idx?'done':''} ${i===idx?'now':''}"></span>`).join('');
   }
 
+  /* 🐢 مسار السباق — موقع الطفل من عدد الإجابات الصح */
+  function raceStrip(st){
+    const me = Math.round(st.correct / st.total * 100);
+    const rival = Math.round(st.idx / st.total * 100);      /* السلحفاة بتمشي مع كل سؤال */
+    return `
+      <div class="track">
+        <div class="lane"><span class="runner me" style="inset-inline-start:${me}%">🏃</span><span class="flag">🏁</span></div>
+        <div class="lane"><span class="runner" style="inset-inline-start:${rival}%">🐢</span><span class="flag">🏁</span></div>
+        <div class="order-hint">${me > rival ? 'انت قدام السلحفاة! 🎉' : me === rival ? 'متعادلين — يلا!' : 'السلحفاة قدام شوية 💪'}</div>
+      </div>`;
+  }
+  /* 🧩 البازل — صورة واحدة مقسّمة ٣×٢، كل خانة بتوري جزءها هي بس.
+     الحيلة: جوه كل خانة نرسم الصورة كاملة بحجم الشبكة كلها ونزحزحها
+     بحيث يبان الجزء اللي يخص الخانة دي — زي بازل حقيقي. */
+  function puzzleGrid(q, st){
+    const COLS = 2, ROWS = 2, total = COLS * ROWS;   /* صورة مربّعة = ٤ قطع متساوية */
+    const open_ = Math.min(st.correct, total);
+    const tiles = Array.from({length:total}, (_, i) => {
+      const col = i % COLS, row = Math.floor(i / COLS);
+      return `<span class="pc ${i < open_ ? 'open' : ''}">
+                <i style="left:${-col * 100}%;top:${-row * 100}%">${q.puzzle}</i>
+              </span>`;
+    }).join('');
+    return `
+      <div class="puzzle" style="--pcols:${COLS};--prows:${ROWS}">${tiles}</div>
+      <div class="order-hint"><span id="pzn">${ar(open_)}</span> / ${ar(total)} قطعة ظهرت</div>`;
+  }
+
   function renderQuestion(q, st){
     renderDots();
     const wrap = document.getElementById('qwrap');
@@ -161,7 +190,7 @@ const UI = (() => {
         </div>
         <div class="order-hint">${q.orderHint || 'اضغط الأرقام بالترتيب'}</div>
         <div class="choices">
-          ${q.items.map(n=>`<button class="choice ${q.numeric===false?'txt':''} ${q.bigChoices?'mbig':''}" data-v="${n}" style="--c:${st.stage.color}">${ar(n)}</button>`).join('')}
+          ${q.items.map(n=>`<button class="choice ${q.numeric===false?'txt':''} ${q.bigChoices?'mbig':''}" data-v="${n}" style="--c:${st.stage.color}">${q.itemHtml ? q.itemHtml(n) : ar(n)}</button>`).join('')}
         </div>`;
     }else if(q.mode === 'find'){
       body = `
@@ -171,12 +200,46 @@ const UI = (() => {
         <div class="findgrid">
           ${q.cells.map((c,i)=>`<button class="fcell" data-i="${i}">${c.ch}</button>`).join('')}
         </div>`;
+    }else if(q.mode === 'rhythm'){
+      body = `
+        <div class="ask-row"><h2 class="ask">${q.ask}</h2>${sayBtn()}</div>
+        <div class="beats" id="beats">
+          ${q.seq.map(()=>`<i class="beat"></i>`).join('')}
+        </div>
+        <div class="pads">
+          ${q.pads.map(p=>`<button class="pad" data-k="${p.k}" style="--pdc:${p.color}"
+             aria-label="${p.name}">${p.icon}</button>`).join('')}
+        </div>
+        <div class="center"><button class="btn ghost" id="btnReplayBeat">▶️ اسمع تاني</button></div>
+        <div class="order-hint">${q.hint}</div>`;
+    }else if(q.mode === 'color'){
+      body = `
+        <div class="ask-row"><h2 class="ask">${q.ask}</h2>${sayBtn()}</div>
+        <div class="order-hint">${q.hint}</div>
+        <div class="paintgrid" style="--cols:${q.cols}">
+          ${q.cells.map((c,i)=>`<button class="pcell" data-p="${i}">${ar(c.n)}</button>`).join('')}
+        </div>
+        <div class="pots">
+          ${q.palette.map(p=>`<button class="pot" data-color="${p.n}" data-name="${p.name}"
+             style="--pc:${p.color}" aria-label="${p.name} رقم ${ar(p.n)}">${ar(p.n)}</button>`).join('')}
+        </div>`;
+    }else if(q.mode === 'balloon'){
+      body = `
+        <div class="ask-row"><h2 class="ask">${q.ask}</h2>${sayBtn()}</div>
+        <div class="order-hint">${q.hint}</div>
+        <div class="bsky">
+          ${q.balloons.map(b => `
+            <button class="balloon" data-v="${b.v}"
+              style="--bc:${b.color};--l:${b.left}%;--dur:${b.dur}s;--delay:-${b.delay}s;--sway:${b.sway}s">
+              <span class="bv">${ar(b.v)}</span><i class="bstr"></i>
+            </button>`).join('')}
+        </div>`;
     }else if(q.mode === 'memory'){
       body = `
         <div class="ask-row"><h2 class="ask ltr">${q.ask}</h2>${sayBtn()}</div>
         <div class="order-hint">${q.hint}</div>
-        <div class="memgrid">
-          ${q.cards.map((c,i)=>`<button class="mcard" data-m="${i}">❓</button>`).join('')}
+        <div class="memgrid" style="--mc:${Math.min(q.cards.length / 2, 5)}">
+          ${q.cards.map((c,i)=>`<button class="mcard" data-m="${i}"><span class="qm">?</span></button>`).join('')}
         </div>`;
     }else if(q.mode === 'pairs'){
       body = `
@@ -218,9 +281,11 @@ const UI = (() => {
     }else{
       body = `
         <div class="ask-row"><h2 class="ask">${q.ask}</h2>${sayBtn()}</div>
+        ${q.track  ? raceStrip(st)   : ''}
+        ${q.puzzle ? puzzleGrid(q, st) : ''}
         ${q.visual||''}
         <div class="choices ${q.wide?'wide':''}">
-          ${q.choices.map(c=>`<button class="choice ${typeof c==='string'&&c.length>1?'txt':''} ${q.ltr?'ltr':''} ${q.bigChoices?'mbig':''}" data-v="${c}" style="--c:${st.stage.color}">${ar(c)}</button>`).join('')}
+          ${q.choices.map(c=>`<button class="choice ${typeof c==='string'&&c.length>1?'txt':''} ${q.ltr?'ltr':''} ${q.bigChoices?'mbig':''}" data-v="${c}" style="--c:${st.stage.color}">${q.render ? q.render(c) : ar(c)}</button>`).join('')}
         </div>`;
     }
     wrap.innerHTML = `<div class="qcard" id="qcard">${body}</div>`;
@@ -234,6 +299,24 @@ const UI = (() => {
 
     wrap.querySelectorAll('.fcell').forEach(btn=>{
       btn.onclick = () => Engine.findPick(+btn.dataset.i, btn);
+    });
+    wrap.querySelectorAll('.pot').forEach(btn=>{
+      btn.onclick = () => Engine.colorSelect(+btn.dataset.color, btn);
+    });
+    wrap.querySelectorAll('.pcell').forEach(btn=>{
+      btn.onclick = () => Engine.colorPaint(+btn.dataset.p, btn);
+    });
+    wrap.querySelectorAll('.pad').forEach(btn=>{
+      btn.onclick = () => Engine.rhythmTap(+btn.dataset.k, btn);
+    });
+    const rb = document.getElementById('btnReplayBeat');
+    if(rb) rb.onclick = () => Engine.rhythmPlay();
+    wrap.querySelectorAll('.balloon').forEach(btn=>{
+      /* البالونة ممكن تحمل رقم أو حرف */
+      btn.onclick = () => {
+        const raw = btn.dataset.v;
+        Engine.answer(typeof q.answer === 'number' ? Number(raw) : raw, btn);
+      };
     });
     wrap.querySelectorAll('.mcard').forEach(btn=>{
       btn.onclick = () => Engine.memoryPick(+btn.dataset.m, btn);
@@ -313,7 +396,19 @@ const UI = (() => {
     b.textContent = text;
   }
 
+  /* بازل الصورة: القطعة بتتكشف لحظة الإجابة الصح — عشان القطعة
+     الأخيرة تبان قبل ما الجولة تخلص، مش في سؤال مش موجود */
+  function openPuzzlePiece(){
+    const pz = document.querySelector('.puzzle');
+    if(!pz) return;
+    const nxt = pz.querySelector('.pc:not(.open)');
+    if(nxt) nxt.classList.add('open');
+    const n = document.getElementById('pzn');
+    if(n) n.textContent = ar(pz.querySelectorAll('.pc.open').length);
+  }
+
   function correct(btn, firstTry, streak){
+    openPuzzlePiece();
     document.querySelectorAll('.choice.hintme').forEach(b=>b.classList.remove('hintme'));
     if(btn){ btn.classList.add('right'); }
     document.querySelectorAll('.choice').forEach(b=>b.style.pointerEvents='none');
@@ -453,6 +548,21 @@ const UI = (() => {
     }
   }
 
+  /* 🥁 وميض الطبلة وعلامات النبضات */
+  function flashPad(k){
+    const b = document.querySelector(`.pad[data-k="${k}"]`);
+    if(!b) return;
+    b.classList.add('hit');
+    setTimeout(()=>b.classList.remove('hit'), 220);
+  }
+  function markBeat(i){
+    const b = document.querySelectorAll('#beats .beat')[i];
+    if(b) b.classList.add('on');
+  }
+  function resetBeats(){
+    document.querySelectorAll('#beats .beat').forEach(b=>b.classList.remove('on'));
+  }
+
   function confetti(n){
     const cols = PALETTE;
     for(let i=0;i<n;i++){
@@ -532,6 +642,6 @@ const UI = (() => {
   }
 
   return {mathMap, worldMap, bar, bumpStars, sortPlace, confetti, popMsg, gameScreen, renderQuestion, renderDots, correct, wrong, fillSlot, markNext,
-          resultScreen, bindSettings, setBubble, timeUp};
+          resultScreen, bindSettings, setBubble, timeUp, flashPad, markBeat, resetBeats};
 })();
 

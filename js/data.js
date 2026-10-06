@@ -23,7 +23,7 @@ const LEVELS = {
   4:{max:20, sumMax:20, steps:[1,1,1,2], choices:4}
 };
 
-const PALETTE = ['#FF6B6B','#7A5CFF','#2FC9B4','#FF9F1C','#4CB8FF','#1FAE9B','#E05FA8','#5FBF5F','#FFC43D','#6C7BFF','#FF7A59','#1FA9D6','#C06BE8'];
+const PALETTE = ['#FF6B6B','#7A5CFF','#2FC9B4','#FF9F1C','#4CB8FF','#1FAE9B','#E05FA8','#5FBF5F','#FFC43D','#6C7BFF','#FF7A59','#1FA9D6','#C06BE8','#FF6B6B','#36B37E','#F28DB2','#7A4FD1','#19B5C9','#E89B2B'];
 
 const STAGES = [
   {id:'counting',       icon:'🔢', name:'العد',            base:1},
@@ -76,3 +76,21 @@ function numberChoices(answer, count, min, max){
 
 /* كل لعبة تسجّل مولّدها هنا (js/games/*.js) */
 const Generators = {};
+
+/* ============================================================
+   مراحل عالم الألعاب — ألعاب مسلية بتستخدم نفس محتوى التعلّم
+   ============================================================ */
+const GAME_STAGES = [
+  {id:'balloons', color:'#FF6B6B',       icon:'🎈', name:'فرقع البالونة',  base:1},
+  {id:'memoryNum', color:'#7A4FD1',      icon:'🧠', name:'الرقم وصاحبه',   base:1},
+  {id:'listenNum', color:'#4C9BFF',      icon:'👂', name:'اسمع واختار',    base:1},
+  {id:'race', color:'#36B37E',           icon:'🏁', name:'سباق الأرقام',   base:2},
+  {id:'puzzle', color:'#E89B2B',         icon:'🧩', name:'بازل الصورة',    base:2, count:4},
+  {id:'colorNum', color:'#E05FA8',       icon:'🎨', name:'لوّن بالأرقام',   base:1, count:1},
+  {id:'pattern',    color:'#1FAE9B', icon:'🔁', name:'اتبع النمط',      base:1},
+  {id:'letterHunt', color:'#FF9F1C', icon:'🔤', name:'صيد الحروف',      base:1},
+  {id:'rhythm',     color:'#C06BE8', icon:'🥁', name:'كرر الإيقاع',     base:1},
+  {id:'shapes',     color:'#4CB8FF', icon:'🔺', name:'الأشكال والألوان', base:1},
+  {id:'sizeOrder',  color:'#5FBF5F', icon:'📏', name:'رتّب بالحجم',      base:1},
+  {id:'clock',      color:'#7A5CFF', icon:'🕐', name:'كام الساعة',      base:3}
+];

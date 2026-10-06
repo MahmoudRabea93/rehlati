@@ -17,23 +17,73 @@
      • ليها مفتاح في الإعدادات ومحفوظة مع باقي الإعدادات
    ============================================================ */
 const Music = (() => {
-  const STEP = 1.45;      // ثانية بين كل نغمة والتانية — مهلهل وهادي
-  const BAR  = 4;         // عدد النغمات قبل ما الكورد يتغيّر
-  const VOL  = 0.11;      // هادي جدًا: خلفية مش أغنية
+  const BAR = 4;          // عدد النغمات قبل ما الكورد يتغيّر
 
-  /* دورة كوردات بسيطة ودافية (بالنسبة لدرجة الأساس) */
-  const CHORDS = [
-    {bass:-12, tones:[0, 4, 7, 12]},     // دو
-    {bass:-3,  tones:[9, 12, 16, 21]},   // لا صغير
-    {bass:-7,  tones:[5, 9, 12, 17]},    // فا
-    {bass:-5,  tones:[7, 11, 14, 19]}    // صول
-  ];
+  /* ---------- دورات كوردات جاهزة ----------
+     كل دورة ليها "مزاج" مختلف، والكل في نفس السلّم فمفيش نشاز */
+  const PROG = {
+    /* دافية ومطمّنة — دو / لا صغير / فا / صول */
+    warm:  [{bass:-12,tones:[0,4,7,12]}, {bass:-3,tones:[9,12,16,21]},
+            {bass:-7,tones:[5,9,12,17]}, {bass:-5,tones:[7,11,14,19]}],
+    /* واسعة وحالمة — فا / دو / صول / لا صغير */
+    airy:  [{bass:-7,tones:[5,9,12,17]}, {bass:-12,tones:[0,4,7,16]},
+            {bass:-5,tones:[7,11,14,19]}, {bass:-3,tones:[9,12,16,21]}],
+    /* فضولية خفيفة — لا صغير / فا / دو / صول */
+    curious:[{bass:-3,tones:[9,12,16,21]}, {bass:-7,tones:[5,9,12,17]},
+            {bass:-12,tones:[0,4,7,12]}, {bass:-5,tones:[7,11,14,19]}],
+    /* نشيطة للسباق — دو / فا / صول / دو */
+    bright:[{bass:-12,tones:[0,4,7,12]}, {bass:-7,tones:[5,9,12,17]},
+            {bass:-5,tones:[7,11,14,19]}, {bass:-12,tones:[4,7,12,16]}]
+  };
+
+  /* ---------- مزاج موسيقي لكل شاشة ----------
+     step = البطء (ثواني بين النغمات) | vol = الصوت | tone = نبرة الجرس
+     المفتاح = id المرحلة، وإلا id العالم، وإلا 'home' */
+  const THEMES = {
+    home:      {prog:'warm',    step:1.45, vol:.11, tone:[1,.22,.08], bass:.07},
+    math:      {prog:'warm',    step:1.5,  vol:.09, tone:[1,.18,.06], bass:.06},
+    arabic:    {prog:'airy',    step:1.7,  vol:.09, tone:[1,.14,.05], bass:.07},
+    english:   {prog:'curious', step:1.4,  vol:.09, tone:[1,.25,.09], bass:.05},
+    games:     {prog:'airy',    step:1.3,  vol:.10, tone:[1,.3,.12],  bass:.05},
+    /* ألعاب لها طابعها الخاص */
+    balloons:  {prog:'airy',    step:1.15, vol:.10, tone:[1,.34,.14], bass:.04},
+    memoryNum: {prog:'curious', step:1.9,  vol:.08, tone:[1,.16,.05], bass:.06},
+    listenNum: {prog:'warm',    step:2.6,  vol:.04, tone:[1,.1,.03],  bass:.03},
+    race:      {prog:'bright',  step:0.8,  vol:.11, tone:[1,.4,.18],  bass:.08},
+    puzzle:    {prog:'airy',    step:1.6,  vol:.09, tone:[1,.2,.07],  bass:.06},
+    colorNum:  {prog:'warm',    step:2.1,  vol:.08, tone:[1,.12,.04], bass:.05},
+    pattern:   {prog:'curious', step:1.6,  vol:.09, tone:[1,.18,.06], bass:.06},
+    letterHunt:{prog:'airy',    step:1.15, vol:.10, tone:[1,.34,.14], bass:.04},
+    rhythm:    {prog:'warm',    step:3.2,  vol:.03, tone:[1,.08,.02], bass:.02},
+    shapes:    {prog:'curious', step:1.5,  vol:.09, tone:[1,.22,.08], bass:.05},
+    sizeOrder: {prog:'warm',    step:1.8,  vol:.08, tone:[1,.16,.05], bass:.06},
+    clock:     {prog:'airy',    step:2.0,  vol:.08, tone:[1,.14,.05], bass:.06}
+  };
+
+  let T = THEMES.home;                    // المزاج الشغّال دلوقتي
+  const CHORDS = () => PROG[T.prog];
 
   let ctx = null, master = null, bus = null, bassOsc = null, bassGain = null;
   let timer = null, playing = false, quiet = false, watch = null;
   let beat = 0, last = 12;                // آخر نغمة اتعزفت (عشان نمشي بخطوات صغيرة)
 
   const on = () => !!(Progress.get().settings || {}).music;
+  /* تغيير المزاج: نخفت، نبدّل الإعدادات، نرجّع بالتدريج — من غير قطع */
+  function theme(id){
+    const t = THEMES[id] || THEMES[(PACKS[id] || {}).world] || THEMES.home;
+    if(t === T) return;
+    T = t;
+    beat = 0;
+    if(!playing) return;
+    fade(0, .5);
+    clearTimeout(timer);
+    setTimeout(() => {
+      if(!playing) return;
+      if(bassGain) bassGain.gain.setTargetAtTime(T.bass, ctx.currentTime, .3);
+      fade(target(), 1.6);
+      tick();
+    }, 600);
+  }
   const freq = n => 261.63 * Math.pow(2, n / 12);   // دو الأوسط = درجة ٠
   const speaking = () => { try{ return !!(window.speechSynthesis && speechSynthesis.speaking); }catch(e){ return false; } };
 
@@ -64,10 +114,10 @@ const Music = (() => {
 
     /* باص مستمر ناعم جدًا — بيدي دفء تحت اللحن */
     bassOsc = ctx.createOscillator(); bassOsc.type = 'sine';
-    bassGain = ctx.createGain(); bassGain.gain.value = .07;
+    bassGain = ctx.createGain(); bassGain.gain.value = T.bass;
     const bLp = ctx.createBiquadFilter(); bLp.type = 'lowpass'; bLp.frequency.value = 320;
     bassOsc.connect(bassGain).connect(bLp).connect(master);
-    bassOsc.frequency.value = freq(CHORDS[0].bass);
+    bassOsc.frequency.value = freq(CHORDS()[0].bass);
     bassOsc.start();
     return true;
   }
@@ -80,7 +130,8 @@ const Music = (() => {
     g.gain.exponentialRampToValueAtTime(vol, t + .035);        // ضربة ناعمة
     g.gain.exponentialRampToValueAtTime(.0001, t + 3.4);       // ذيل طويل زي الجرس
     g.connect(bus); g.connect(bus.__echo);
-    [[1, 1], [2, .22], [3, .08]].forEach(([mult, amp]) => {
+    T.tone.forEach((amp, k) => {
+      const mult = k + 1;
       const o = ctx.createOscillator();
       o.type = 'sine';
       o.frequency.value = freq(n) * mult;
@@ -102,7 +153,8 @@ const Music = (() => {
 
   function tick(){
     if(!playing) return;
-    const ch = CHORDS[Math.floor(beat / BAR) % CHORDS.length];
+    const prog = CHORDS();
+    const ch = prog[Math.floor(beat / BAR) % prog.length];
     const pos = beat % BAR;
 
     if(pos === 0 && bassOsc){        // الكورد بيتغيّر بانزلاق ناعم مش فجأة
@@ -111,10 +163,10 @@ const Music = (() => {
     }
     bell(nextNote(ch.tones), 0, pos === 0 ? .17 : .12);
     /* نغمة مرافقة أخف بعد نص المسافة — بتدي إحساس التهويدة */
-    if(pos === 1 || pos === 3) bell(ch.tones[0] + 12, STEP * .5, .05);
+    if(pos === 1 || pos === 3) bell(ch.tones[0] + 12, T.step * .5, .05);
 
     beat++;
-    timer = setTimeout(tick, STEP * 1000);
+    timer = setTimeout(tick, T.step * 1000);
   }
 
   /* ---------- مستوى الصوت ---------- */
@@ -125,7 +177,7 @@ const Music = (() => {
     master.gain.setValueAtTime(Math.max(master.gain.value, .0001), t);
     master.gain.linearRampToValueAtTime(to, t + sec);
   }
-  const target = () => (!on() || quiet) ? 0 : (speaking() ? VOL * .25 : VOL);
+  const target = () => (!on() || quiet) ? 0 : (speaking() ? T.vol * .25 : T.vol);
 
   /* ---------- تشغيل وإيقاف ---------- */
   function start(){
@@ -161,7 +213,7 @@ const Music = (() => {
     if(document.hidden) stop(true); else setTimeout(start, 300);
   });
 
-  return {start, stop, quiet:silence, toggle, playing:()=>playing, on};
+  return {start, stop, quiet:silence, toggle, theme, playing:()=>playing, on, themeName:()=>T.prog};
 })();
 
 /* نسجّل الموديول على window عشان الملفات التانية تلاقيه (const مابيتسجّلش تلقائيًا) */

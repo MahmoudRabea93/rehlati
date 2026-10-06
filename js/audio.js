@@ -228,6 +228,16 @@ const Audio_ = (() => {
   }
 
   return {
+    /* 🥁 طبلة من تلاتة: لكل واحدة نبرة مختلفة واضحة للطفل */
+    pad(i = 0){
+      if(!audio()) return;
+      const P = [
+        {f:180, to:70,  type:'triangle', dur:.3,  vol:.3},   // طبلة
+        {f:900, to:420, type:'square',   dur:.14, vol:.14},  // تصفيقة
+        {f:1320,to:1320,type:'sine',     dur:.5,  vol:.2}    // جرس
+      ][i] || {f:440, dur:.2, vol:.2};
+      note(P.f, 0, P.dur, {type:P.type, vol:P.vol, to:P.to !== P.f ? P.to : null});
+    },
     speak, greet, unlock, report,
     speakEn(text){ speak(text, null, 'en'); },
     supported:()=> !!synth,

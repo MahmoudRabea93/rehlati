@@ -61,6 +61,8 @@ const Progress = (() => {
     get:()=>state,
     isUnlocked(id){
       if(state.settings.dev || state.unlocked.includes(id)) return true;
+      /* عالم الألعاب مفتوح كله من الأول — دي ألعاب مش مناهج */
+      if((PACKS[id] || {}).world === 'games') return true;
       /* مرحلة ليها after بتتفتح أول ما المرحلة دي تتنجح (٨٠٪+) — بتشتغل للتقدّم القديم كمان */
       const pk = PACKS[id];
       return !!(pk && pk.after && (state.best[pk.after] || 0) >= 2);

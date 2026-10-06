@@ -11,7 +11,8 @@ const WORLDS_META = {
   math:    {icon:'🧮', name:'الحساب',        color:'#7A5CFF', tone:'#5B3FD6', title:'🔢 عالم الحساب'},
   quran:   {icon:'📖', name:'القرآن الكريم', color:'#2FC9B4', tone:'#1C8E7F', title:'📖 عالم القرآن'},
   arabic:  {icon:'🔤', name:'العربي',        color:'#FF9F1C', tone:'#CC7A00', title:'🔤 عالم العربي'},
-  english: {icon:'🇬🇧', name:'English',      color:'#4CB8FF', tone:'#1E86CC', title:'🇬🇧 English World'}
+  english: {icon:'🇬🇧', name:'English',      color:'#4CB8FF', tone:'#1E86CC', title:'🇬🇧 English World'},
+  games:   {icon:'🎮', name:'ألعاب',         color:'#FF6B6B', tone:'#D23F3F', title:'🎮 عالم الألعاب'}
 };
 
 function registerStages(world, stages){
@@ -28,6 +29,9 @@ function appendStages(world, stages){
 
 /* مراحل الحساب الموجودة أصلاً تدخل نفس السجل بدون تغيير منطقها */
 registerStages('math', STAGES.map(s => ({...s, gen:(lv,o) => Generators[s.id](lv,o)})));
+
+/* عالم الألعاب — مراحله كلها مفتوحة من البداية (ألعاب مش مناهج) */
+registerStages('games', GAME_STAGES.map(s => ({...s, gen:(lv,o) => Generators[s.id](lv,o)})));
 
 /* ============================================================
    شاشة تعلّم الحروف — يستخدمها العربي و English بنفس الكود
